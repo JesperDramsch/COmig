@@ -31,8 +31,8 @@ nh   = 5;       % Number of Offsets
 Fs   = 1/dt;    % Frequency sampling [Hz]
 hmax = 1000;    % Maximum Half-Offset [m]
 dh   = 250;     % Offset increment [m]
-vmin = 2750;     % 2750 ist wohl richtig
-vmax = 2750;
+vmin = 1500;     % 2750 ist wohl richtig
+vmax = 3000;
 dv   = 200;
 aper = 250;
 %% Open File
@@ -101,8 +101,7 @@ for v = vmin:dv:vmax;
     %% Schleife ueber half offsets
     for i_h = 1:nh
         depth = sqrt((t).^2+(h(i_h)/v).^2);
-        max(depth)
-        phi = max((pi/2)-atan(2*v*depth/h(i_h)))
+        phi = max((pi/2)-atan(2*v*depth/h(i_h)));
         
         [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, 180, h(i_h), dt, dcmp);
         Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhoff(:,:,i_h),Skala(:,i_h),'spline');
@@ -119,13 +118,13 @@ for v = vmin:dv:vmax;
     axis tight
     hold off
     %
-    ff=figure;
+    ff=figure(v+1);
     set(ff, 'Position', [0 0 1280 1024] );
     imagesc(1:ns*nh,(1:nt)'*dt,Kirchhoff(:,:))
     title('Zeitmigration')
     colorbar
     %}
-    fx=figure;
+    fx=figure(v+2);
     set(fx, 'Position', [0 0 1280 1024] );
     imagesc((1:ns*nh)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-1 1])
     title('Tiefenmigration')

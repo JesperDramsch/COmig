@@ -29,9 +29,9 @@ for i_cmp=-nx:nx
 %% Schleife ueber Samples
     for i_t=1:nt
         
-        Tiefe = sqrt((h/(2*v)).^2+((i_t-1)*dt).^2);            % Laufzeittiefe
+        Tiefe = sqrt((h/(v)).^2+((i_t-1)*dt).^2);            % Laufzeittiefe
         
-        t = sqrt(Tiefe^2 + (cmp/(2*v))^2);                     % TWT
+        t = sqrt(Tiefe^2 + (cmp/(v))^2);                     % TWT
         it = floor(1.5 + t/dt);                                % TWT Index
         
         if(it > nt)                                            % Abbruchkriterium
@@ -51,5 +51,5 @@ for i_cmp=-nx:nx
         
     end
 end
-Skala = sqrt((h/(2*v)).^2+((0:nt-1)'*dt).^2)*v;                                       % Tiefenskalierung
+Skala = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v;                                       % Tiefenskalierung
 return

@@ -31,9 +31,9 @@ nh   = 5;       % Number of Offsets
 Fs   = 1/dt;    % Frequency sampling [Hz]
 hmax = 1000;    % Maximum Half-Offset [m]
 dh   = 250;     % Offset increment [m]
-vmin = 1500;     % 2750 ist wohl richtig
-vmax = 3000;
-dv   = 200;
+vmin = 1600;    % 1850 ist wohl richtig
+vmax = 2600;
+dv   = 250;
 aper = 250;
 %% Open File
 

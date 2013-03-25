@@ -87,7 +87,7 @@ Kirchhoff(1:nt,1:ns,1:nh)=0; %(Zeit, CMP, Offset)
 Skala(1:nt,1:nh) = 0;
 depth(1:nt)=0;
 t=(0:nt-1)'*dt;
-
+Kirchhoffdepth(1:nt,1:ns,1:nh)=0;
 i_v = 0;
 %% Schleife ueber Geschwindigkeiten
 for v = vmin:dv:vmax;
@@ -103,7 +103,8 @@ for v = vmin:dv:vmax;
         depth = sqrt((t).^2+(h(i_h)/v).^2);
         phi = max(h(i_h)./depth);
         
-        [Kirchhoff(:,:,i_h) Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, phi, h(i_h), dt, dcmp);
+        [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, phi, h(i_h), dt, dcmp);
+        Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhoff(:,:,i_h),Skala(:,i_h),'spline');
     end
     i_t=1:nt;
     % Axenskalierter tiefenmirgierter Plot (summierter CIG)
@@ -119,16 +120,13 @@ for v = vmin:dv:vmax;
     %{
     ff=figure;
     set(ff, 'Position', [0 0 1280 1024] );
-    imagesc((1:nt)'*dt,1:ns*nh,Kirchhoff(:,:))
+    imagesc(1:ns*nh,(1:nt)'*dt,Kirchhoff(:,:))
     title('Zeitmigration')
     colorbar
     %}
     fx=figure;
     set(fx, 'Position', [0 0 1280 1024] );
-    for m = 1:nh
-        subplot(1,nh,m)
-        imagesc((1:ns)*dcmp,Skala(:,m),Kirchhoff(:,:,m))
-    end
+    imagesc((1:ns*nh)*dcmp,Skala(:,1),Kirchhoffdepth(:,:))
     title('Tiefenmigration')
     colorbar
     %}

@@ -129,7 +129,7 @@ for v = vmin:dv:vmax;
     set(fx, 'Position', [0 0 1280 1024] );
     imagesc((1:ns*nh)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-1 1])
     title('Tiefenmigration')
-    colormap([ones(11,1),(0:.1:1)',(0:.1:1)';(1:-.1:0)',(1:-.1:0)',ones(11,1)])
+    colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
     colorbar
     %}
     

@@ -39,7 +39,8 @@ for i_cmp=-nx:nx
         end
         
         amp    = cos(phi)*Tiefe*sqrt(nt*dt/(2*pi*v*t));      % Gewichtsfunktion
-        
+        %amp    =  cos(phi)* (i_t-1)*dt * sqrt( nt * dt / (2  * v^2 * pi) );
+
         bound_l = max( floor(1-i_cmp),  1);                    % Apertur
         bound_r = min(floor(nx-i_cmp), nx);
         

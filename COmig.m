@@ -31,9 +31,9 @@ nh   = 5;       % Number of Offsets
 Fs   = 1/dt;    % Frequency sampling [Hz]
 hmax = 1000;    % Maximum Half-Offset [m]
 dh   = 250;     % Offset increment [m]
-vmin = 1000; %2750 ist wohl richtig
-vmax = 5000;
-dv   = 1000;
+vmin = 2750;     % 2750 ist wohl richtig
+vmax = 2750;
+dv   = 200;
 aper = 250;
 %% Open File
 
@@ -101,14 +101,15 @@ for v = vmin:dv:vmax;
     %% Schleife ueber half offsets
     for i_h = 1:nh
         depth = sqrt((t).^2+(h(i_h)/v).^2);
-        phi = max(h(i_h)./depth);
+        max(depth)
+        phi = max((pi/2)-atan(2*v*depth/h(i_h)))
         
-        [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, phi, h(i_h), dt, dcmp);
+        [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, 180, h(i_h), dt, dcmp);
         Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhoff(:,:,i_h),Skala(:,i_h),'spline');
     end
     i_t=1:nt;
     % Axenskalierter tiefenmirgierter Plot (summierter CIG)
-    %
+    %{
     fm = figure(v);
     set(fm, 'Position', [0 0 1280 1024] );
     hold on
@@ -117,7 +118,7 @@ for v = vmin:dv:vmax;
     end
     axis tight
     hold off
-    %{
+    %
     ff=figure;
     set(ff, 'Position', [0 0 1280 1024] );
     imagesc(1:ns*nh,(1:nt)'*dt,Kirchhoff(:,:))
@@ -126,8 +127,9 @@ for v = vmin:dv:vmax;
     %}
     fx=figure;
     set(fx, 'Position', [0 0 1280 1024] );
-    imagesc((1:ns*nh)*dcmp,Skala(:,1),Kirchhoffdepth(:,:))
+    imagesc((1:ns*nh)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-1 1])
     title('Tiefenmigration')
+    colormap([ones(11,1),(0:.1:1)',(0:.1:1)';(1:-.1:0)',(1:-.1:0)',ones(11,1)])
     colorbar
     %}
     

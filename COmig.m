@@ -116,7 +116,7 @@ mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % Aufsummierung der CO-Gather
 
 fx=figure(v+1);
     set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(xplot(1:ns)*1e-3,Skala(:,1)*1e-03,mig(:,:),[-1 1])
+    imagesc(((1:ns)-1)*dcmp*1e-3,Skala(:,1)*1e-03,mig(:,:),[-1 1])
     title('Tiefenmigration','Fontsize',24)
     xlabel('CMP [km]','Fontsize',24)
     ylabel('Depth [km]','Fontsize',24)

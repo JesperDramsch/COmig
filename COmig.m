@@ -51,8 +51,8 @@ fclose(fidfilt);
 
 farbe = rand(nh,3);
 
-%% Plot horizontal maximum data
-%{
+%% Frequenzanalyse
+
 NFFT = 2^nextpow2(nt);
 fdata  = fft(mean(data(:,:,1),2),NFFT)/nt;
 faxis = Fs/2*linspace(0,1,NFFT/2+1);
@@ -65,7 +65,6 @@ title('Frequency analysis','Fontsize',24)
 set(gca,'Fontsize',24)
 set(fx, 'Position', [0 0 1280 1024] );
 axis ([0 75 0 1])
-%}
 
 %% Kirchhoff Migration
 % Initialisierungen
@@ -76,13 +75,6 @@ t=(0:nt-1)'*dt;
 Kirchhoffdepth(1:nt,1:ns,1:nh)=0;
 i_v = 0;
 
-% X-Vektor for plots
-xplot(1:ns*nh)=0;
-for l=1:nh
-    for k = 0:ns-1
-        xplot((l-1)*ns+1+k)=k*dcmp;
-    end
-end
 %% Schleife ueber Geschwindigkeiten
 for v = vmin:dv:vmax;
     i_v = i_v+1;

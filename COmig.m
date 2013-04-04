@@ -1,7 +1,7 @@
 %{
 
     Comig.m - Constant offset Kirchhoff migration in time and depth.
-    Copyright (C) 2013  Jesper S Dramsch, Matthias Schneider, Jan Walda
+    Copyright (C) 2013  Jesper S Dramsch, Matthias Schneider, Dela Spickermann, Jan Walda
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,9 +31,9 @@ nh   = 5;       % Number of Offsets
 Fs   = 1/dt;    % Frequency sampling [Hz]
 hmax = 1000;    % Maximum Half-Offset [m]
 dh   = 250;     % Offset increment [m]
-vmin = 1600;    % 1850 ist wohl richtig
-vmax = 2600;
-dv   = 250;
+vmin = 1650;    % 1850 ist wohl richtig
+vmax = 1850;
+dv   = 100;
 aper = 250;
 %% Open File
 
@@ -53,28 +53,18 @@ farbe = rand(nh,3);
 
 %% Plot horizontal maximum data
 %{
-figure
-hold on
-for m = 1:nx
-    plot(dt*(0:nt-1),max(data(:,:,m),[],2),'Color',farbe(m,:))
-end
-legend('h = 0km','h = .25km','h = .5km','h = .75km','h = 1km','Location','NorthWest')
-xlabel('Time')
-ylabel('Amplitude')
-
-
-%% Frequency content
-
 NFFT = 2^nextpow2(nt);
 fdata  = fft(mean(data(:,:,1),2),NFFT)/nt;
 faxis = Fs/2*linspace(0,1,NFFT/2+1);
 
-figure
+fx = figure(1);
 plot(faxis,abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))));
-xlabel('Frequency');
-ylabel('Normalized Amplitude');
-title('Frequency analysis')
-axis tight
+xlabel('Frequency','Fontsize',24);
+ylabel('Normalized Amplitude','Fontsize',24);
+title('Frequency analysis','Fontsize',24)
+set(gca,'Fontsize',24)
+set(fx, 'Position', [0 0 1280 1024] );
+axis ([0 75 0 1])
 %}
 
 %% Kirchhoff Migration
@@ -85,56 +75,60 @@ half_aper = round(.5*aper/dcmp);
 h = 0:dh:hmax;
 Kirchhoff(1:nt,1:ns,1:nh)=0; %(Zeit, CMP, Offset)
 Skala(1:nt,1:nh) = 0;
-depth(1:nt)=0;
 t=(0:nt-1)'*dt;
 Kirchhoffdepth(1:nt,1:ns,1:nh)=0;
 i_v = 0;
+
+% X-Vektor for plots
+xplot(1:ns*nh)=0;
+for l=1:nh
+    for k = 0:ns-1
+        xplot((l-1)*ns+1+k)=k*dcmp;
+    end
+end
 %% Schleife ueber Geschwindigkeiten
 for v = vmin:dv:vmax;
     i_v = i_v+1;
     Kirchhoff(1:nt,1:ns,1:nh)=0; %(Zeit, CMP, Offset)
     Skala(1:nt,1:nh) = 0;
-    depth(1:nt)=0;
-    phi(1:nt)=0;
     
     t=(0:nt-1)'*dt;
     %% Schleife ueber half offsets
     for i_h = 1:nh
-        depth = sqrt((t).^2+(h(i_h)/v).^2);
-        phi = max((pi/2)-atan(2*v*depth/h(i_h)));
-        
-        [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, 180, h(i_h), dt, dcmp);
+        [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, h(i_h), dt, dcmp);
+        Kirchhoff(1,:,i_h) = 0;
         Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhoff(:,:,i_h),Skala(:,i_h),'spline');
     end
     i_t=1:nt;
-    % Axenskalierter tiefenmirgierter Plot (summierter CIG)
-    %{
-    fm = figure(v);
-    set(fm, 'Position', [0 0 1280 1024] );
-    hold on
-    for m = 1:nh
-        plot(Skala(:,m),sum(Kirchhoff(:,:,m),2),'Color',farbe(m,:))  % Tiefenskaliert
-    end
-    axis tight
-    hold off
-    %
-    ff=figure(v+1);
-    set(ff, 'Position', [0 0 1280 1024] );
-    imagesc(1:ns*nh,(1:nt)'*dt,Kirchhoff(:,:))
-    title('Zeitmigration')
-    colorbar
-    %}
-    fx=figure(v+2);
+
+   % CO-Gather fuer die jeweilige Velocity
+    fx=figure(v);
     set(fx, 'Position', [0 0 1280 1024] );
-    imagesc((1:ns*nh)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-1 1])
-    title('Tiefenmigration')
+    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-1 1])
+    title('Tiefenmigration','Fontsize',24)
+    xlabel('CMP','Fontsize',24)
+    ylabel('Depth','Fontsize',24)
+    set(gca,'Fontsize',24)
     colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
     colorbar
-    %}
     
 end
 
-% Aufsummieren der CO-Gather zur finalen migrierten Sektion
-% Mig(1:nt,1:ns)=sum(Kirchhoff(:,:,:),3);
-% figure
-% contourf(Mig,100,'Linestyle','none')
+mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % Aufsummierung der CO-Gather
+
+fx=figure(v+1);
+    set(fx, 'Position', [0 0 1280 1024] );
+    imagesc(xplot(1:ns),Skala(:,1),mig(:,:),[-1 1])
+    title('Tiefenmigration','Fontsize',24)
+    xlabel('CMP','Fontsize',24)
+    ylabel('Depth','Fontsize',24)
+    set(gca,'Fontsize',24)
+    colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
+    colorbar
+    
+dlmwrite('mig.dat',mig)
+dlmwrite('COGatherh0.dat',Kirchhoffdepth(:,:,1));
+dlmwrite('COGatherh250.dat',Kirchhoffdepth(:,:,2));
+dlmwrite('COGatherh500.dat',Kirchhoffdepth(:,:,3));
+dlmwrite('COGatherh750.dat',Kirchhoffdepth(:,:,4));
+dlmwrite('COGatherh1000.dat',Kirchhoffdepth(:,:,5));

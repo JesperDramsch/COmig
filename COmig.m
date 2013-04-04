@@ -75,13 +75,6 @@ t=(0:nt-1)'*dt;
 Kirchhoffdepth(1:nt,1:ns,1:nh)=0;
 i_v = 0;
 
-% X-Vektor for plots
-xplot(1:ns*nh)=0;
-for l=1:nh
-    for k = 0:ns-1
-        xplot((l-1)*ns+1+k)=k*dcmp;
-    end
-end
 %% Schleife ueber Geschwindigkeiten
 for v = vmin:dv:vmax;
     i_v = i_v+1;

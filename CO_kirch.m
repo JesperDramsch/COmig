@@ -1,9 +1,7 @@
-function [Kirchhoff, Skala] = CO_kirch(data, v, phi, h, dt, dcmp)
-
 %{
 
     CO_kirch.m - Constant offset Kirchhoff migration.
-    Copyright (C) 2013  Jesper S Dramsch, Matthias Schneider, Jan Walda
+    Copyright (C) 2013  Jesper S Dramsch, Matthias Schneider, Dela Spickermann, Jan Walda
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,29 +17,31 @@ function [Kirchhoff, Skala] = CO_kirch(data, v, phi, h, dt, dcmp)
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %}
 
+function [Kirchhoff, Skala] = CO_kirch(data, v, h, dt, dcmp)
+
 [nt,nx] = size(data);
 Kirchhoff = zeros(nt,nx);
 
 %% Schleife ueber CMPs
-for i_cmp=-nx:nx
-    cmp = dcmp*i_cmp;
+for i_cmp=-nx:nx                              % Indices benachbarter CMPs
+    cmp = dcmp*i_cmp;                         % CMP-Abstand der Indices
     
-%% Schleife ueber Samples
+%% Schleife ueber Laufzeitsamples
     for i_t=1:nt
         
-        Tiefe = sqrt((h/(v)).^2+((i_t-1)*dt).^2);            % Laufzeittiefe
+        Tiefe = sqrt((h/(v)).^2+((i_t-1)*dt).^2);     % Laufzeittiefe
         
-        t = sqrt(Tiefe^2 + (cmp/(v))^2);                     % TWT
-        it = floor(1.5 + t/dt);                                % TWT Index
+        t = sqrt(Tiefe^2 + (cmp/(v))^2);              % TWT
+        it = floor(1.5 + t/dt);                       % TWT Index
         
-        if(it > nt)                                            % Abbruchkriterium
+        if(it > nt)                                   % Abbruchkriterium
             break;
         end
         
-        amp    = cos(phi)*Tiefe*sqrt(nt*dt/(2*pi*v*t));      % Gewichtsfunktion
-        %amp    =  cos(phi)* (i_t-1)*dt * sqrt( nt * dt / (2  * v^2 * pi) );
-
-        bound_l = max( floor(1-i_cmp),  1);                    % Apertur
+        amp = 4*(Tiefe*v)/(v^2*t);                    % Gewichtsfunktion 
+        % aus dem Paper von Zhang Y. (2000)
+        
+        bound_l = max( floor(1-i_cmp),  1);           % Aperturgrenzen
         bound_r = min(floor(nx-i_cmp), nx);
         
 %% Schleife ueber Apertur        
@@ -51,5 +51,5 @@ for i_cmp=-nx:nx
         
     end
 end
-Skala = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v;                                       % Tiefenskalierung
+Skala = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v;          % Tiefenskalierung
 return

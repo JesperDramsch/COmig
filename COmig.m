@@ -124,6 +124,20 @@ fx=figure(v+1);
     colorbar
     set(gca,'Fontsize',24)
     
+% Plot Noise level    
+figure
+plot(((1:nt)-1)*dt,filtdata(:,51,1)/max(filtdata(:,51,1)),'r')
+hold on
+plot(((1:nt)-1)*dt,mig(:,51)/max(mig(:,51)),'k')
+ylabel('Normalisierte Amplitude','Fontsize',24)
+xlabel('Zeit [s]','Fontsize',24)
+legend('SNR Input','SNR Migriert','Location','best')
+set(gca,'Fontsize',24)
+SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
+SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));
+
+fprintf('Verbesserung der Signal-to-Noise ratio von %f2 auf %f2\n',SNRin,SNRout)
+
 dlmwrite('mig.dat',mig)
 dlmwrite('COGatherh0.dat',Kirchhoffdepth(:,:,1));
 dlmwrite('COGatherh250.dat',Kirchhoffdepth(:,:,2));

@@ -34,7 +34,7 @@ dh   = 250;     % Offset increment [m]
 vmin = 1650;    % 1850 ist wohl richtig
 vmax = 1850;
 dv   = 100;
-aper = 250;
+
 %% Open File
 
 filename = 'data-7/SEIS-orig';
@@ -68,9 +68,6 @@ axis ([0 75 0 1])
 %}
 
 %% Kirchhoff Migration
-
-half_aper = round(.5*aper/dcmp);
-
 % Initialisierungen
 h = 0:dh:hmax;
 Kirchhoff(1:nt,1:ns,1:nh)=0; %(Zeit, CMP, Offset)

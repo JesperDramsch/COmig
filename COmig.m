@@ -32,7 +32,7 @@ Fs   = 1/dt;    % Frequency sampling [Hz]
 hmax = 1000;    % Maximum Half-Offset [m]
 dh   = 250;     % Offset increment [m]
 vmin = 1650;    % 1850 ist wohl richtig
-vmax = 1850;
+vmax = 1950;
 dv   = 100;
 
 %% Open File
@@ -101,13 +101,14 @@ for v = vmin:dv:vmax;
    % CO-Gather fuer die jeweilige Velocity
     fx=figure(v);
     set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-1 1])
+    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1)*1e-03,Kirchhoffdepth(:,:),[-1 1])
     title('Tiefenmigration','Fontsize',24)
-    xlabel('CMP','Fontsize',24)
-    ylabel('Depth','Fontsize',24)
-    set(gca,'Fontsize',24)
+    xlabel('CMP [km]','Fontsize',24)
+    ylabel('Depth [km]','Fontsize',24)
     colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
     colorbar
+    set(gca,'Fontsize',24)
+    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
     
 end
 
@@ -115,13 +116,13 @@ mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % Aufsummierung der CO-Gather
 
 fx=figure(v+1);
     set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(xplot(1:ns),Skala(:,1),mig(:,:),[-1 1])
+    imagesc(xplot(1:ns)*1e-3,Skala(:,1)*1e-03,mig(:,:),[-1 1])
     title('Tiefenmigration','Fontsize',24)
-    xlabel('CMP','Fontsize',24)
-    ylabel('Depth','Fontsize',24)
-    set(gca,'Fontsize',24)
+    xlabel('CMP [km]','Fontsize',24)
+    ylabel('Depth [km]','Fontsize',24)
     colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
     colorbar
+    set(gca,'Fontsize',24)
     
 dlmwrite('mig.dat',mig)
 dlmwrite('COGatherh0.dat',Kirchhoffdepth(:,:,1));

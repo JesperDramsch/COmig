@@ -51,8 +51,8 @@ fclose(fidfilt);
 
 farbe = rand(nh,3);
 
-%% Plot horizontal maximum data
-%{
+%% Frequenzanalyse
+
 NFFT = 2^nextpow2(nt);
 fdata  = fft(mean(data(:,:,1),2),NFFT)/nt;
 faxis = Fs/2*linspace(0,1,NFFT/2+1);
@@ -65,7 +65,6 @@ title('Frequency analysis','Fontsize',24)
 set(gca,'Fontsize',24)
 set(fx, 'Position', [0 0 1280 1024] );
 axis ([0 75 0 1])
-%}
 
 %% Kirchhoff Migration
 % Initialisierungen

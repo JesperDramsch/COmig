@@ -1,6 +1,10 @@
+                                                                     
+                                                                     
+                                                                     
+                                             
 %{
 
-    Comig.m - Constant offset Kirchhoff migration in time and depth.
+    CO_kirch.m - Constant offset Kirchhoff migration.
     Copyright (C) 2013  Jesper S Dramsch, Matthias Schneider, Dela Spickermann, Jan Walda
 
     This program is free software: you can redistribute it and/or modify
@@ -17,122 +21,44 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %}
 
-clear all
-close all
-clc
+function [Kirchhoff, Skala] = CO_kirch(data, v, h, dt, dcmp, half_aper)
 
-format long
+[nt,nx] = size(data);
+Kirchhoff = zeros(nt,nx);
 
-dcmp = 20;      % CMP-Distance [m]
-dt   = 2e-3;    % Samplingintervall [s]
-nt   = 1001;    % Number of samples
-ns   = 101;     % Number of traces
-nh   = 5;       % Number of Offsets
-Fs   = 1/dt;    % Frequency sampling [Hz]
-hmax = 1000;    % Maximum Half-Offset [m]
-dh   = 250;     % Offset increment [m]
-vmin = 1650;    % 1850 ist wohl richtig
-vmax = 1950;
-dv   = 100;
-
-%% Open File
-
-filename = 'data-7/SEIS-orig';
-
-fid = fopen(filename,'r');
-data = reshape(fread(fid, [nt nh*ns],'single'),nt,ns,nh);
-fclose(fid);
-
-filenamefilt = 'data-7/SEIS-filt';
-
-fidfilt = fopen(filenamefilt,'r');
-filtdata = reshape(fread(fidfilt, [nt nh*ns],'single'),nt,ns,nh);
-fclose(fidfilt);
-
-farbe = rand(nh,3);
-
-%% Frequenzanalyse
-
-NFFT = 2^nextpow2(nt);
-fdata  = fft(mean(data(:,:,1),2),NFFT)/nt;
-faxis = Fs/2*linspace(0,1,NFFT/2+1);
-
-fx = figure(1);
-plot(faxis,abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))));
-xlabel('Frequency','Fontsize',24);
-ylabel('Normalized Amplitude','Fontsize',24);
-title('Frequency analysis','Fontsize',24)
-set(gca,'Fontsize',24)
-set(fx, 'Position', [0 0 1280 1024] );
-axis ([0 75 0 1])
-
-%% Kirchhoff Migration
-% Initialisierungen
-h = 0:dh:hmax;
-Kirchhoff(1:nt,1:ns,1:nh)=0; %(Zeit, CMP, Offset)
-Skala(1:nt,1:nh) = 0;
-t=(0:nt-1)'*dt;
-Kirchhoffdepth(1:nt,1:ns,1:nh)=0;
-i_v = 0;
-
-%% Schleife ueber Geschwindigkeiten
-for v = vmin:dv:vmax;
-    i_v = i_v+1;
-    Kirchhoff(1:nt,1:ns,1:nh)=0; %(Zeit, CMP, Offset)
-    Skala(1:nt,1:nh) = 0;
+%% Schleife ueber CMPs
+for i_cmp=-nx:nx                              % Indices benachbarter CMPs
+    cmp = dcmp*i_cmp;                         % CMP-Abstand der Indices
     
-    t=(0:nt-1)'*dt;
-    %% Schleife ueber half offsets
-    for i_h = 1:nh
-        [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, h(i_h), dt, dcmp);
-        Kirchhoff(1,:,i_h) = 0;
-        Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhoff(:,:,i_h),Skala(:,i_h),'spline');
+%% Schleife ueber Laufzeitsamples
+    for i_t=1:nt
+        
+        Tiefe = sqrt((h/(v)).^2+((i_t-1)*dt).^2);     % Laufzeittiefe
+        
+        t = sqrt(Tiefe^2 + (cmp/(v))^2);              % TWT
+        it = floor(1.5 + t/dt);                       % TWT Index
+        
+        if(it > nt)                                   % Abbruchkriterium
+            break;
+        end
+        
+        amp = 4*(Tiefe*v)/(v^2*t);                    % Gewichtsfunktion 
+        % aus dem Paper von Zhang Y. (2000)
+
+        % Aperturgrenzen
+        if(abs(i_cmp)<(nx-half_aper) && abs(i_cmp)>(nx-half_aper))
+            bound_l = max(floor(i_cmp-half_aper),1);
+            bound_r = min(floor(i_cmp+half_aper),nx);
+        else
+            bound_l = max(floor(1-i_cmp),  1);           % Aperturgrenzen
+            bound_r = min(floor(nx-i_cmp), nx);
+        end
+
+%% Schleife ueber Apertur        
+        for i_aper=bound_l:bound_r
+            Kirchhoff(i_t,i_aper)=Kirchhoff(i_t,i_aper)+data(i_t,i_cmp+i_aper)*amp;
+        end
     end
-    i_t=1:nt;
-
-   % CO-Gather fuer die jeweilige Velocity
-    fx=figure(v);
-    set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1)*1e-03,Kirchhoffdepth(:,:),[-1 1])
-    title('Tiefenmigration','Fontsize',24)
-    xlabel('CMP [km]','Fontsize',24)
-    ylabel('Depth [km]','Fontsize',24)
-    colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
-    colorbar
-    set(gca,'Fontsize',24)
-    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
-    
 end
-
-mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % Aufsummierung der CO-Gather
-
-fx=figure(v+1);
-    set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(((1:ns)-1)*dcmp*1e-3,Skala(:,1)*1e-03,mig(:,:),[-1 1])
-    title('Tiefenmigration','Fontsize',24)
-    xlabel('CMP [km]','Fontsize',24)
-    ylabel('Depth [km]','Fontsize',24)
-    colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
-    colorbar
-    set(gca,'Fontsize',24)
-    
-% Plot Noise level    
-figure
-plot(((1:nt)-1)*dt,filtdata(:,51,1)/max(filtdata(:,51,1)),'r')
-hold on
-plot(((1:nt)-1)*dt,mig(:,51)/max(mig(:,51)),'k')
-ylabel('Normalisierte Amplitude','Fontsize',24)
-xlabel('Zeit [s]','Fontsize',24)
-legend('SNR Input','SNR Migriert','Location','best')
-set(gca,'Fontsize',24)
-SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
-SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));
-
-fprintf('Verbesserung der Signal-to-Noise ratio von %f2 auf %f2\n',SNRin,SNRout)
-
-dlmwrite('mig.dat',mig)
-dlmwrite('COGatherh0.dat',Kirchhoffdepth(:,:,1));
-dlmwrite('COGatherh250.dat',Kirchhoffdepth(:,:,2));
-dlmwrite('COGatherh500.dat',Kirchhoffdepth(:,:,3));
-dlmwrite('COGatherh750.dat',Kirchhoffdepth(:,:,4));
-dlmwrite('COGatherh1000.dat',Kirchhoffdepth(:,:,5));
+Skala = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v;          % Tiefenskalierung
+return

@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %}
 
-function [Kirchhoff, Skala] = CO_kirch(data, v, h, dt, dcmp)
+function [Kirchhoff, Skala] = CO_kirch(data, v, h, dt, dcmp, half_aper)
 
 [nt,nx] = size(data);
 Kirchhoff = zeros(nt,nx);
@@ -40,15 +40,20 @@ for i_cmp=-nx:nx                              % Indices benachbarter CMPs
         
         amp = 4*(Tiefe*v)/(v^2*t);                    % Gewichtsfunktion 
         % aus dem Paper von Zhang Y. (2000)
-        
-        bound_l = max( floor(1-i_cmp),  1);           % Aperturgrenzen
-        bound_r = min(floor(nx-i_cmp), nx);
-        
+
+        % Aperturgrenzen
+        if(abs(i_cmp)<(nx-half_aper) && abs(i_cmp)>(nx-half_aper))
+            bound_l = max(floor(i_cmp-half_aper),1);
+            bound_r = min(floor(i_cmp+half_aper),nx);
+        else
+            bound_l = max(floor(1-i_cmp),  1);           % Aperturgrenzen
+            bound_r = min(floor(nx-i_cmp), nx);
+        end
+
 %% Schleife ueber Apertur        
         for i_aper=bound_l:bound_r
-            Kirchhoff(i_t,i_aper)=Kirchhoff(i_t,i_aper)+data(it,i_aper+i_cmp)*amp;
+            Kirchhoff(i_t,i_aper)=Kirchhoff(i_t,i_aper)+data(i_t,i_cmp+i_aper)*amp;
         end
-        
     end
 end
 Skala = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v;          % Tiefenskalierung

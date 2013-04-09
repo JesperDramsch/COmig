@@ -1,7 +1,3 @@
-                                                                     
-                                                                     
-                                                                     
-                                             
 %{
 
     CO_kirch.m - Constant offset Kirchhoff migration.
@@ -25,7 +21,7 @@ function [Kirchhoff, Skala] = CO_kirch(data, v, h, dt, dcmp, half_aper)
 
 [nt,nx] = size(data);
 Kirchhoff = zeros(nt,nx);
-
+Kirchhoff2 = zeros(nt,nx);
 %% Schleife ueber CMPs
 for i_cmp=1:nx                              % Indices benachbarter CMPs
     cmp = dcmp*i_cmp;                         % CMP-Abstand der Indices
@@ -44,21 +40,19 @@ for i_cmp=1:nx                              % Indices benachbarter CMPs
         
         amp = 4*(Tiefe*v)/(v^2*t);                    % Gewichtsfunktion 
         % aus dem Paper von Zhang Y. (2000)
-
-        % Aperturgrenzen
-        if(i_cmp>(1+half_aper) && i_cmp<(nx-half_aper))
-            bound_l = max(floor(i_cmp-half_aper),1);
-            bound_r = min(floor(i_cmp+half_aper),nx);
-        else
-            bound_l = max(floor(1-i_cmp),  1);
-            bound_r = min(floor(nx-i_cmp), nx);
-        end
         
-%% Schleife ueber Apertur        
+        % Aperturgrenzen
+        bound_l = max(floor(i_cmp-1),  1);
+        bound_r = min(floor(nx-i_cmp), nx);
+        if(i_cmp>(1+half_aper) && i_cmp<(nx-half_aper))
+            bound_l = max(floor(i_cmp-1), -half_aper);
+            bound_r = min(floor(nx-i_cmp), +half_aper);
+        end          
+        
+%% Schleife ueber Apertur
         for i_aper=bound_l:bound_r
-%            Kirchhoff(i_t,i_aper)=Kirchhoff(i_t,i_aper)+data(it,i_cmp+i_aper)*amp;
-            Kirchhoff(i_t,i_cmp)=Kirchhoff(i_t,i_cmp)+data(it,i_cmp+i_aper)*amp;
-        end
+            Kirchhoff(i_t,i_aper)=Kirchhoff(i_t,i_aper)+data(it,i_cmp+i_aper)*amp;
+        end                
 
     end
 end

@@ -17,33 +17,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %}
 
-clear all
-close all
-clc
+clear all       % Clear workspace
+close all       % Close figures  
+clc             % Clear command line window
 
-format long
+format long     % Double precision
 
 dcmp = 20;      % CMP-Distance [m]
-dt   = 2e-3;    % Samplingintervall [s]
+dt   = 2e-3;    % Samplinginterval [s]
 nt   = 1001;    % Number of samples
 ns   = 101;     % Number of traces
-nh   = 5;       % Number of Offsets
+nh   = 5;       % Number of offsets
 Fs   = 1/dt;    % Frequency sampling [Hz]
-hmax = 1000;    % Maximum Half-Offset [m]
+hmax = 1000;    % Maximum half-offset [m]
 dh   = 250;     % Offset increment [m]
 vmin = 1750;    % Minimum test velocity [m/s]
 vmax = 2050;    % Maximum test velocity [m/s]
 vfinal = 1950;  % Final migration velocity [m/s]
-dv   = 50;      % Velocity increment
-aper = 120;     % Aperturweite
-%% Open File
+dv   = 50;      % Velocity increment [m/s]
+aper = 120;     % Aperturewidth [m]
 
+%% Open file
+% Original data
 filename = 'data-6/SEIS-orig';
 
 fid = fopen(filename,'r');
 data = reshape(fread(fid, [nt nh*ns],'single'),nt,ns,nh);
 fclose(fid);
 
+% with sqrt{-i omega} filtered data
 filenamefilt = 'data-6/SEIS-filt';
 
 fidfilt = fopen(filenamefilt,'r');
@@ -51,48 +53,49 @@ filtdata = reshape(fread(fidfilt, [nt nh*ns],'single'),nt,ns,nh);
 fclose(fidfilt);
 
 %% Frequency analysis
+NFFT = 2^nextpow2(nt);                             % calculate next 2^n to prepare Data for FFT
+fdata  = fft(mean(data(:,:,1),2),NFFT)/nt;         % FFT of extended Dataset
+faxis = Fs/2*linspace(0,1,NFFT/2+1);               % Skaling of the x-axis
 
-NFFT = 2^nextpow2(nt);
-fdata  = fft(mean(data(:,:,1),2),NFFT)/nt;
-faxis = Fs/2*linspace(0,1,NFFT/2+1);
-
+% Plot of the normalized frequency spektrum
 fx = figure(1);
 plot(faxis,abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))));
 xlabel('Frequency','Fontsize',24);
 ylabel('Normalized Amplitude','Fontsize',24);
 %title('Frequency analysis','Fontsize',24)
 set(gca,'Fontsize',24)
-set(fx, 'Position', [0 0 1280 1024] );
+set(fx, 'Position', [0 0 1280 1024] );              % Size of the new frame
 axis ([0 75 0 1])
-print('-dpng','freq.png');
+print('-dpng','freq.png');                          % Outputfile of figure
 
 
-%% Kirchhoff Migration
+%% Kirchhoff migration
 
+% Half aperture
 half_aper = round(.5*aper/dcmp);
 
-% Initialisierungen
+% Initialising
 h = 0:dh:hmax;
 Kirchhoffdepth(1:nt,1:ns,1:nh)=0;
 i_v = 0;
-Kirchhoff(1:nt,1:ns,1:nh)=0; %(Zeit, CMP, Offset)
+Kirchhoff(1:nt,1:ns,1:nh)=0;                         %(time, CMP, offset)
 Skala(1:nt,1:nh) = 0;
 t=(0:nt-1)'*dt;
 
-%% Schleife ueber Geschwindigkeiten
+%% Loop over velocities
 for v = vmin:dv:vmax;
     i_v = i_v+1;
-    Kirchhoff(1:nt,1:ns,1:nh)=0; %(Zeit, CMP, Offset)
+    Kirchhoff(1:nt,1:ns,1:nh)=0;                      %(time, CMP, offset)
     Skala(1:nt,1:nh) = 0;
     
-    %% Schleife ueber half offsets
+    %% loop over half offsets
     for i_h = 1:nh
         [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, half_aper);
         Kirchhoff(1,:,i_h) = 0;
         Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhoff(:,:,i_h),Skala(:,i_h),'spline');
     end
     
-    % CO-Gather fuer die jeweilige Velocity
+    % CO-Gather for each velocity
     fx=figure(v);
     set(fx, 'Position', [0 0 1280 1024] );
     imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-max(max(max(abs(Kirchhoffdepth)))) max(max(max(abs(Kirchhoffdepth))))])
@@ -100,15 +103,16 @@ for v = vmin:dv:vmax;
     xlabel('CMP','Fontsize',24)
     ylabel('Depth','Fontsize',24)
     set(gca,'Fontsize',24)
-    colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
+    colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])  % polarized plot
     colorbar
     set(gca,'Fontsize',24)
-    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
+    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])             % reskaling x-axis 
     print('-dpng',sprintf('v%g.png',v));
     
-    if v == vfinal
-        mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % Aufsummierung der CO-Gather
+    if v == vfinal  % If loop reaches the correct velocity (estimated with constant velocity scan)
+        mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % summing CO-Gather
         
+        % Plot of the migration result
         fx=figure(v+1);
         set(fx, 'Position', [0 0 1280 1024] );
         imagesc(((1:ns)-1)*dcmp,Skala(:,1),mig(:,:),[-max(max(abs(mig))) max(max(abs(mig)))])
@@ -120,7 +124,7 @@ for v = vmin:dv:vmax;
         set(gca,'Fontsize',24)
         print('-dpng',sprintf('v%g.png',v));
         
-        % Plot trace 51 normalisiert
+        % Plot trace 51 normalized
         figure
         plot(((1:nt)-1)*dt,filtdata(:,51,1)/max(filtdata(:,51,1)),'r')
         hold on
@@ -131,7 +135,7 @@ for v = vmin:dv:vmax;
         set(gca,'Fontsize',24)
         print('-dpng','SNRnorm.png');
         
-        % Plot trace 51 nicht normalisiert
+        % Plot trace 51 not normalized
         figure
         plot(((1:nt)-1)*dt,filtdata(:,51,1),'r')
         hold on
@@ -142,12 +146,13 @@ for v = vmin:dv:vmax;
         set(gca,'Fontsize',24)
         print('-dpng','SNRreal.png');
         
+        % Calculation of Signal-to-Noise-Ratio
         SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
         SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));
         
         fprintf('Verbesserung der Signal-to-Noise ratio von %f2 auf %f2\n',SNRin,SNRout)
         
-        % Fileoutput
+        % Fileoutput of datamatrices
         dlmwrite('mig.dat',mig)
         dlmwrite('COGatherh0.dat',Kirchhoffdepth(:,:,1));
         dlmwrite('COGatherh250.dat',Kirchhoffdepth(:,:,2));

@@ -32,9 +32,9 @@ Fs   = 1/dt;    % Frequency sampling [Hz]
 hmax = 1000;    % Maximum Half-Offset [m]
 dh   = 250;     % Offset increment [m]
 vmin = 1750;    % Minimum test velocity [m/s]
-vmax = 2050;    % Maximum test velocity [m/s]
+vmax = 2150;    % Maximum test velocity [m/s]
 vfinal = 1950;  % Final migration velocity [m/s]
-dv   = 50;      % Velocity increment
+dv   = 100;      % Velocity increment
 aper = 120;     % Aperturweite
 %% Open File
 
@@ -95,14 +95,16 @@ for v = vmin:dv:vmax;
     % CO-Gather fuer die jeweilige Velocity
     fx=figure(v);
     set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-max(max(max(abs(Kirchhoffdepth)))) max(max(max(abs(Kirchhoffdepth))))])
+    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1)/1000,Kirchhoffdepth(:,:),[-max(max(max(abs(Kirchhoffdepth)))) max(max(max(abs(Kirchhoffdepth))))])
     %title('Tiefenmigration','Fontsize',24)
-    xlabel('CMP','Fontsize',24)
-    ylabel('Depth','Fontsize',24)
+    xlabel('CMP [km]','Fontsize',24)
+    ylabel('Depth [km]','Fontsize',24)
     set(gca,'Fontsize',24)
     colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
     colorbar
     set(gca,'Fontsize',24)
+    set(gca,'XTickMode','manual')
+    set(gca,'XTick',[0;2000;4000;6000;8000;10000])
     set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
     print('-dpng',sprintf('v%g.png',v));
     
@@ -111,14 +113,14 @@ for v = vmin:dv:vmax;
         
         fx=figure(v+1);
         set(fx, 'Position', [0 0 1280 1024] );
-        imagesc(((1:ns)-1)*dcmp,Skala(:,1),mig(:,:),[-max(max(abs(mig))) max(max(abs(mig)))])
+        imagesc(((1:ns)-1)*dcmp/1000,Skala(:,1)/1000,mig(:,:),[-max(max(abs(mig))) max(max(abs(mig)))])
         %title('Tiefenmigration','Fontsize',24)
-        xlabel('CMP','Fontsize',24)
-        ylabel('Depth','Fontsize',24)
+        xlabel('CMP [km]','Fontsize',24)
+        ylabel('Depth [km]','Fontsize',24)
         colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
         colorbar
         set(gca,'Fontsize',24)
-        print('-dpng',sprintf('v%g.png',v));
+        print('-dpng',sprintf('sum_v%g.png',v));
         
         % Plot trace 51 normalisiert
         figure

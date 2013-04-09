@@ -32,19 +32,19 @@ Fs   = 1/dt;    % Frequency sampling [Hz]
 hmax = 1000;    % Maximum Half-Offset [m]
 dh   = 250;     % Offset increment [m]
 vmin = 1750;    % Minimum test velocity [m/s]
-vmax = 1950;    % Maximum test velocity [m/s]
-vfinal = 1850;  % Final migration velocity [m/s]
+vmax = 2050;    % Maximum test velocity [m/s]
+vfinal = 1950;  % Final migration velocity [m/s]
 dv   = 50;      % Velocity increment
 aper = 120;     % Aperturweite
 %% Open File
 
-filename = 'data-7/SEIS-orig';
+filename = 'data-6/SEIS-orig';
 
 fid = fopen(filename,'r');
 data = reshape(fread(fid, [nt nh*ns],'single'),nt,ns,nh);
 fclose(fid);
 
-filenamefilt = 'data-7/SEIS-filt';
+filenamefilt = 'data-6/SEIS-filt';
 
 fidfilt = fopen(filenamefilt,'r');
 filtdata = reshape(fread(fidfilt, [nt nh*ns],'single'),nt,ns,nh);
@@ -60,11 +60,11 @@ fx = figure(1);
 plot(faxis,abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))));
 xlabel('Frequency','Fontsize',24);
 ylabel('Normalized Amplitude','Fontsize',24);
-title('Frequency analysis','Fontsize',24)
+%title('Frequency analysis','Fontsize',24)
 set(gca,'Fontsize',24)
 set(fx, 'Position', [0 0 1280 1024] );
 axis ([0 75 0 1])
-print('-depsc2','freq.eps');
+print('-dpng','freq.png');
 
 
 %% Kirchhoff Migration
@@ -95,8 +95,8 @@ for v = vmin:dv:vmax;
     % CO-Gather fuer die jeweilige Velocity
     fx=figure(v);
     set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[min(min(min(Kirchhoffdepth))) max(max(max(Kirchhoffdepth)))])
-    title('Tiefenmigration','Fontsize',24)
+    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-max(max(max(abs(Kirchhoffdepth)))) max(max(max(abs(Kirchhoffdepth))))])
+    %title('Tiefenmigration','Fontsize',24)
     xlabel('CMP','Fontsize',24)
     ylabel('Depth','Fontsize',24)
     set(gca,'Fontsize',24)
@@ -104,21 +104,21 @@ for v = vmin:dv:vmax;
     colorbar
     set(gca,'Fontsize',24)
     set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
-    print('-depsc2',sprintf('v%g.eps',v));
+    print('-dpng',sprintf('v%g.png',v));
     
     if v == vfinal
         mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % Aufsummierung der CO-Gather
         
         fx=figure(v+1);
         set(fx, 'Position', [0 0 1280 1024] );
-        imagesc(((1:ns)-1)*dcmp,Skala(:,1),mig(:,:),[min(min(mig)) max(max(mig))])
-        title('Tiefenmigration','Fontsize',24)
+        imagesc(((1:ns)-1)*dcmp,Skala(:,1),mig(:,:),[-max(max(abs(mig))) max(max(abs(mig)))])
+        %title('Tiefenmigration','Fontsize',24)
         xlabel('CMP','Fontsize',24)
         ylabel('Depth','Fontsize',24)
-        set(gca,'Fontsize',24)
         colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
         colorbar
-        print('-depsc2',sprintf('v%g.eps',v));
+        set(gca,'Fontsize',24)
+        print('-dpng',sprintf('v%g.png',v));
         
         % Plot trace 51 normalisiert
         figure
@@ -129,7 +129,7 @@ for v = vmin:dv:vmax;
         xlabel('Zeit [s]','Fontsize',24)
         legend('SNR Input','SNR Migriert','Location','best')
         set(gca,'Fontsize',24)
-        print('-depsc2','SNRnorm.eps');
+        print('-dpng','SNRnorm.png');
         
         % Plot trace 51 nicht normalisiert
         figure
@@ -140,7 +140,7 @@ for v = vmin:dv:vmax;
         xlabel('Zeit [s]','Fontsize',24)
         legend('SNR Input','SNR Migriert','Location','best')
         set(gca,'Fontsize',24)
-        print('-depsc2','SNRreal.eps');
+        print('-dpng','SNRreal.png');
         
         SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
         SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));

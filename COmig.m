@@ -1,7 +1,3 @@
-                                                                     
-                                                                     
-                                                                     
-                                             
 %{
 
     Comig.m - Constant offset Kirchhoff migration in time and depth.
@@ -97,7 +93,7 @@ for v = vmin:dv:vmax;
    % CO-Gather fuer die jeweilige Velocity
     fx=figure(v);
     set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-1 1])
+    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[min(min(min(Kirchhoffdepth))) max(max(max(Kirchhoffdepth)))])
     title('Tiefenmigration','Fontsize',24)
     xlabel('CMP','Fontsize',24)
     ylabel('Depth','Fontsize',24)
@@ -105,7 +101,7 @@ for v = vmin:dv:vmax;
     colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
     colorbar
     set(gca,'Fontsize',24)
-    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
+ %   set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
     
 end
 
@@ -113,7 +109,7 @@ mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % Aufsummierung der CO-Gather
 
 fx=figure(v+1);
     set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(((1:ns)-1)*dcmp,Skala(:,1),mig(:,:),[-1 1])
+    imagesc(((1:ns)-1)*dcmp,Skala(:,1),mig(:,:),[min(min(mig)) max(max(mig))])
     title('Tiefenmigration','Fontsize',24)
     xlabel('CMP','Fontsize',24)
     ylabel('Depth','Fontsize',24)

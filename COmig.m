@@ -132,7 +132,7 @@ figure
 plot(((1:nt)-1)*dt,filtdata(:,51,1),'r')
 hold on
 plot(((1:nt)-1)*dt,mig(:,51),'k')
-ylabel('Normalisierte Amplitude','Fontsize',24)
+ylabel('Amplitude','Fontsize',24)
 xlabel('Zeit [s]','Fontsize',24)
 legend('SNR Input','SNR Migriert','Location','best')
 set(gca,'Fontsize',24)

@@ -101,7 +101,8 @@ for v = vmin:dv:vmax;
     colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
     colorbar
     set(gca,'Fontsize',24)
- %   set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
+    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
+    print('-depsc2',sprintf('v%g.jpg',v));
     
 end
 
@@ -116,6 +117,7 @@ fx=figure(v+1);
     set(gca,'Fontsize',24)
     colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
     colorbar
+    print('-depsc2',sprintf('v%g.jpg',v));
 
 % Plot trace 51 normalisiert
 figure
@@ -126,6 +128,7 @@ ylabel('Normalisierte Amplitude','Fontsize',24)
 xlabel('Zeit [s]','Fontsize',24)
 legend('SNR Input','SNR Migriert','Location','best')
 set(gca,'Fontsize',24)
+    print('-depsc2','SNRnorm.jpg');
 
 % Plot trace 51 nicht normalisiert
 figure
@@ -136,6 +139,7 @@ ylabel('Amplitude','Fontsize',24)
 xlabel('Zeit [s]','Fontsize',24)
 legend('SNR Input','SNR Migriert','Location','best')
 set(gca,'Fontsize',24)
+    print('-depsc2','SNRreal.jpg');
 
 SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
 SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));

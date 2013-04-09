@@ -31,9 +31,10 @@ nh   = 5;       % Number of Offsets
 Fs   = 1/dt;    % Frequency sampling [Hz]
 hmax = 1000;    % Maximum Half-Offset [m]
 dh   = 250;     % Offset increment [m]
-vmin = 1850;    % 1850 ist wohl richtig oder 1300?
-vmax = 1850;
-dv   = 100;
+vmin = 1750;    % Minimum test velocity [m/s]
+vmax = 1950;    % Maximum test velocity [m/s]
+vfinal = 1850;  % Final migration velocity [m/s]
+dv   = 50;      % Velocity increment
 aper = 120;     % Aperturweite
 %% Open File
 
@@ -50,7 +51,7 @@ filtdata = reshape(fread(fidfilt, [nt nh*ns],'single'),nt,ns,nh);
 fclose(fidfilt);
 
 %% Frequency analysis
-%{
+
 NFFT = 2^nextpow2(nt);
 fdata  = fft(mean(data(:,:,1),2),NFFT)/nt;
 faxis = Fs/2*linspace(0,1,NFFT/2+1);
@@ -63,7 +64,8 @@ title('Frequency analysis','Fontsize',24)
 set(gca,'Fontsize',24)
 set(fx, 'Position', [0 0 1280 1024] );
 axis ([0 75 0 1])
-%}
+print('-depsc2','freq.jpg');
+
 
 %% Kirchhoff Migration
 
@@ -76,7 +78,7 @@ i_v = 0;
 Kirchhoff(1:nt,1:ns,1:nh)=0; %(Zeit, CMP, Offset)
 Skala(1:nt,1:nh) = 0;
 t=(0:nt-1)'*dt;
-    
+
 %% Schleife ueber Geschwindigkeiten
 for v = vmin:dv:vmax;
     i_v = i_v+1;
@@ -89,8 +91,8 @@ for v = vmin:dv:vmax;
         Kirchhoff(1,:,i_h) = 0;
         Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhoff(:,:,i_h),Skala(:,i_h),'spline');
     end
-
-   % CO-Gather fuer die jeweilige Velocity
+    
+    % CO-Gather fuer die jeweilige Velocity
     fx=figure(v);
     set(fx, 'Position', [0 0 1280 1024] );
     imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[min(min(min(Kirchhoffdepth))) max(max(max(Kirchhoffdepth)))])
@@ -104,52 +106,55 @@ for v = vmin:dv:vmax;
     set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
     print('-depsc2',sprintf('v%g.jpg',v));
     
+    if v == vfinal
+        mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % Aufsummierung der CO-Gather
+        
+        fx=figure(v+1);
+        set(fx, 'Position', [0 0 1280 1024] );
+        imagesc(((1:ns)-1)*dcmp,Skala(:,1),mig(:,:),[min(min(mig)) max(max(mig))])
+        title('Tiefenmigration','Fontsize',24)
+        xlabel('CMP','Fontsize',24)
+        ylabel('Depth','Fontsize',24)
+        set(gca,'Fontsize',24)
+        colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
+        colorbar
+        print('-depsc2',sprintf('v%g.jpg',v));
+        
+        % Plot trace 51 normalisiert
+        figure
+        plot(((1:nt)-1)*dt,filtdata(:,51,1)/max(filtdata(:,51,1)),'r')
+        hold on
+        plot(((1:nt)-1)*dt,mig(:,51)/max(mig(:,51)),'k')
+        ylabel('Normalisierte Amplitude','Fontsize',24)
+        xlabel('Zeit [s]','Fontsize',24)
+        legend('SNR Input','SNR Migriert','Location','best')
+        set(gca,'Fontsize',24)
+        print('-depsc2','SNRnorm.jpg');
+        
+        % Plot trace 51 nicht normalisiert
+        figure
+        plot(((1:nt)-1)*dt,filtdata(:,51,1),'r')
+        hold on
+        plot(((1:nt)-1)*dt,mig(:,51),'k')
+        ylabel('Amplitude','Fontsize',24)
+        xlabel('Zeit [s]','Fontsize',24)
+        legend('SNR Input','SNR Migriert','Location','best')
+        set(gca,'Fontsize',24)
+        print('-depsc2','SNRreal.jpg');
+        
+        SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
+        SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));
+        
+        fprintf('Verbesserung der Signal-to-Noise ratio von %f2 auf %f2\n',SNRin,SNRout)
+        
+        % Fileoutput
+        dlmwrite('mig.dat',mig)
+        dlmwrite('COGatherh0.dat',Kirchhoffdepth(:,:,1));
+        dlmwrite('COGatherh250.dat',Kirchhoffdepth(:,:,2));
+        dlmwrite('COGatherh500.dat',Kirchhoffdepth(:,:,3));
+        dlmwrite('COGatherh750.dat',Kirchhoffdepth(:,:,4));
+        dlmwrite('COGatherh1000.dat',Kirchhoffdepth(:,:,5));
+        
+    end
+    
 end
-
-mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % Aufsummierung der CO-Gather
-
-fx=figure(v+1);
-    set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(((1:ns)-1)*dcmp,Skala(:,1),mig(:,:),[min(min(mig)) max(max(mig))])
-    title('Tiefenmigration','Fontsize',24)
-    xlabel('CMP','Fontsize',24)
-    ylabel('Depth','Fontsize',24)
-    set(gca,'Fontsize',24)
-    colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
-    colorbar
-    print('-depsc2',sprintf('v%g.jpg',v));
-
-% Plot trace 51 normalisiert
-figure
-plot(((1:nt)-1)*dt,filtdata(:,51,1)/max(filtdata(:,51,1)),'r')
-hold on
-plot(((1:nt)-1)*dt,mig(:,51)/max(mig(:,51)),'k')
-ylabel('Normalisierte Amplitude','Fontsize',24)
-xlabel('Zeit [s]','Fontsize',24)
-legend('SNR Input','SNR Migriert','Location','best')
-set(gca,'Fontsize',24)
-    print('-depsc2','SNRnorm.jpg');
-
-% Plot trace 51 nicht normalisiert
-figure
-plot(((1:nt)-1)*dt,filtdata(:,51,1),'r')
-hold on
-plot(((1:nt)-1)*dt,mig(:,51),'k')
-ylabel('Amplitude','Fontsize',24)
-xlabel('Zeit [s]','Fontsize',24)
-legend('SNR Input','SNR Migriert','Location','best')
-set(gca,'Fontsize',24)
-    print('-depsc2','SNRreal.jpg');
-
-SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
-SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));
-
-fprintf('Verbesserung der Signal-to-Noise ratio von %f2 auf %f2\n',SNRin,SNRout)     
-
-% Fileoutput
-dlmwrite('mig.dat',mig)
-dlmwrite('COGatherh0.dat',Kirchhoffdepth(:,:,1));
-dlmwrite('COGatherh250.dat',Kirchhoffdepth(:,:,2));
-dlmwrite('COGatherh500.dat',Kirchhoffdepth(:,:,3));
-dlmwrite('COGatherh750.dat',Kirchhoffdepth(:,:,4));
-dlmwrite('COGatherh1000.dat',Kirchhoffdepth(:,:,5));

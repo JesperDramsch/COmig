@@ -64,7 +64,7 @@ title('Frequency analysis','Fontsize',24)
 set(gca,'Fontsize',24)
 set(fx, 'Position', [0 0 1280 1024] );
 axis ([0 75 0 1])
-print('-depsc2','freq.jpg');
+print('-depsc2','freq.eps');
 
 
 %% Kirchhoff Migration
@@ -104,7 +104,7 @@ for v = vmin:dv:vmax;
     colorbar
     set(gca,'Fontsize',24)
     set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
-    print('-depsc2',sprintf('v%g.jpg',v));
+    print('-depsc2',sprintf('v%g.eps',v));
     
     if v == vfinal
         mig(1:nt,1:ns) = sum(Kirchhoffdepth,3);  % Aufsummierung der CO-Gather
@@ -118,7 +118,7 @@ for v = vmin:dv:vmax;
         set(gca,'Fontsize',24)
         colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
         colorbar
-        print('-depsc2',sprintf('v%g.jpg',v));
+        print('-depsc2',sprintf('v%g.eps',v));
         
         % Plot trace 51 normalisiert
         figure
@@ -129,7 +129,7 @@ for v = vmin:dv:vmax;
         xlabel('Zeit [s]','Fontsize',24)
         legend('SNR Input','SNR Migriert','Location','best')
         set(gca,'Fontsize',24)
-        print('-depsc2','SNRnorm.jpg');
+        print('-depsc2','SNRnorm.eps');
         
         % Plot trace 51 nicht normalisiert
         figure
@@ -140,7 +140,7 @@ for v = vmin:dv:vmax;
         xlabel('Zeit [s]','Fontsize',24)
         legend('SNR Input','SNR Migriert','Location','best')
         set(gca,'Fontsize',24)
-        print('-depsc2','SNRreal.jpg');
+        print('-depsc2','SNRreal.eps');
         
         SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
         SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));

@@ -21,27 +21,26 @@ function [Kirchhoff, Skala] = CO_kirch(data, v, h, dt, dcmp, half_aper)
 
 [nt,nx] = size(data);
 Kirchhoff = zeros(nt,nx);
-Kirchhoff2 = zeros(nt,nx);
-%% Schleife ueber CMPs
-for i_cmp=1:nx                              % Indices benachbarter CMPs
-    cmp = dcmp*i_cmp;                         % CMP-Abstand der Indices
+%% Loop over CMPs
+for i_cmp=1:nx                              % Indices of neighbouring CMPs
+    cmp = dcmp*i_cmp;                         % CMP-distance of the indices
     
-%% Schleife ueber Laufzeitsamples
+%% Loop over timesamples
     for i_t=1:nt
         
-        Tiefe = sqrt((h/(v)).^2+((i_t-1)*dt).^2);     % Laufzeittiefe
+        Tiefe = sqrt((h/(v)).^2+((i_t-1)*dt).^2);     % traveltime depth
         
         t = sqrt(Tiefe^2 + (cmp/(v))^2);              % TWT
-        it = floor(1.5 + t/dt);                       % TWT Index
+        it = floor(1.5 + t/dt);                       % TWT index
         
-        if(it > nt)                                   % Abbruchkriterium
+        if(it > nt)                                   % leave loop if out of Gather
             break;
         end
         
-        amp = nx/half_aper*4*(Tiefe*v)/(v^2*t);                    % Gewichtsfunktion 
-        % aus dem Paper von Zhang Y. (2000)
+        amp = nx/half_aper*4*(Tiefe*v)/(v^2*t);                    % Weightfunction 
+        % based on Zhang Y. (2000)
         
-        % Aperturgrenzen
+        % Aperture limits
         bound_l = max(floor(i_cmp-1),  1);
         bound_r = min(floor(nx-i_cmp), nx);
         if(i_cmp>(1+half_aper) && i_cmp<(nx-half_aper))
@@ -49,12 +48,12 @@ for i_cmp=1:nx                              % Indices benachbarter CMPs
             bound_r = min(floor(nx-i_cmp), +half_aper);
         end          
         
-%% Schleife ueber Apertur
+%% Loop over aperture
         for i_aper=bound_l:bound_r
             Kirchhoff(i_t,i_aper)=Kirchhoff(i_t,i_aper)+data(it,i_cmp+i_aper)*amp;
         end                
 
     end
 end
-Skala = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v;          % Tiefenskalierung
+Skala = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v;          % Depth skaling
 return

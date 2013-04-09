@@ -38,7 +38,7 @@ for i_cmp=1:nx                              % Indices benachbarter CMPs
             break;
         end
         
-        amp = 4*(Tiefe*v)/(v^2*t);                    % Gewichtsfunktion 
+        amp = nx/half_aper*4*(Tiefe*v)/(v^2*t);                    % Gewichtsfunktion 
         % aus dem Paper von Zhang Y. (2000)
         
         % Aperturgrenzen

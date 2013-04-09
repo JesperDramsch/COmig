@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %}
 
-function [Kirchhoff, Skala] = CO_kirch(data, v, h, dt, dcmp, half_aper)
+function [Kirchhoff, Skala] = CO_kirch(data, v, h, dt, dcmp, aper)
 
 [nt,nx] = size(data);
 Kirchhoff = zeros(nt,nx);
@@ -28,24 +28,24 @@ for i_cmp=1:nx                              % Indices of neighbouring CMPs
 %% Loop over timesamples
     for i_t=1:nt
         
-        Tiefe = sqrt((h/(v)).^2+((i_t-1)*dt).^2);     % traveltime depth
+        Tiefe = sqrt((h/v).^2+((i_t-1)*dt).^2);     % traveltime depth
         
-        t = sqrt(Tiefe^2 + (cmp/(v))^2);              % TWT
-        it = floor(1.5 + t/dt);                       % TWT index
+        t = sqrt(Tiefe^2 + (cmp/v)^2);              % TWT
+        it = floor(1.5 + t/dt);                     % TWT index
         
-        if(it > nt)                                   % leave loop if out of Gather
+        if(it > nt)                    % leave loop if out of Gather
             break;
         end
         
-        amp = nx/half_aper*4*(Tiefe*v)/(v^2*t);                    % Weightfunction 
+        amp = nx/aper*4*(Tiefe*v)/(v^2*t);       % Weightfunction 
         % based on Zhang Y. (2000)
         
         % Aperture limits
         bound_l = max(floor(i_cmp-1),  1);
         bound_r = min(floor(nx-i_cmp), nx);
-        if(i_cmp>(1+half_aper) && i_cmp<(nx-half_aper))
-            bound_l = max(floor(i_cmp-1), -half_aper);
-            bound_r = min(floor(nx-i_cmp), +half_aper);
+        if(i_cmp>(1+aper) && i_cmp<(nx-aper))
+            bound_l = max(floor(i_cmp-1), -aper);
+            bound_r = min(floor(nx-i_cmp), +aper);
         end          
         
 %% Loop over aperture

@@ -35,7 +35,7 @@ vmin = 1750;    % Minimum test velocity [m/s]
 vmax = 2150;    % Maximum test velocity [m/s]
 vfinal = 1950;  % Final migration velocity [m/s]
 dv   = 100;      % Velocity increment [m/s]
-aper = 120;     % Aperturewidth [m]
+aper = 100;     % Aperturewidth [m]
 
 %% Open file
 % Original data
@@ -71,27 +71,25 @@ print('-dpng','freq.png');                          % Outputfile of figure
 
 %% Kirchhoff migration
 
-% Half aperture
-half_aper = round(.5*aper/dcmp);
-
 % Initialising
 h = 0:dh:hmax;
 Kirchhoffdepth(1:nt,1:ns,1:nh)=0;
 i_v = 0;
-Kirchhoff(1:nt,1:ns,1:nh)=0;                         %(time, CMP, offset)
+Kirchhoff(1:nt,1:ns,1:nh)=0;                        % (time, CMP, offset)
 Skala(1:nt,1:nh) = 0;
 t=(0:nt-1)'*dt;
+i_aper = round(aper/dcmp);                          % Aperture index
 
 %% Loop over velocities
 for v = vmin:dv:vmax;
     i_v = i_v+1;
-    Kirchhoff(1:nt,1:ns,1:nh)=0;                      %(time, CMP, offset)
+    Kirchhoff(1:nt,1:ns,1:nh)=0;                    %(time, CMP, offset)
     Skala(1:nt,1:nh) = 0;
     
     %% loop over half offsets
     for i_h = 1:nh
-        [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, half_aper);
-        Kirchhoff(1,:,i_h) = 0;
+        [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, i_aper);
+        Kirchhoff([1 end-5:end],:,i_h) = 0;         % Filter side effects
         Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhoff(:,:,i_h),Skala(:,i_h),'spline');
     end
     
@@ -107,9 +105,8 @@ for v = vmin:dv:vmax;
     colorbar
     set(gca,'Fontsize',24)
     set(gca,'XTickMode','manual')
-    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])             % reskaling x-axis 
     set(gca,'XTick',[0;2000;4000;6000;8000;10000])
-    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])
+    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])            % rescaling x-axis 
     print('-dpng',sprintf('v%g.png',v));
     
     if v == vfinal  % If loop reaches the correct velocity (estimated with constant velocity scan)
@@ -134,7 +131,7 @@ for v = vmin:dv:vmax;
         plot(((1:nt)-1)*dt,mig(:,51)/max(mig(:,51)),'k')
         ylabel('Normalisierte Amplitude','Fontsize',24)
         xlabel('Zeit [s]','Fontsize',24)
-        legend('SNR Input','SNR Migriert','Location','best')
+        legend('SNR Input','SNR Migriert','Location','NorthWest')
         set(gca,'Fontsize',24)
         print('-dpng','SNRnorm.png');
         
@@ -145,7 +142,7 @@ for v = vmin:dv:vmax;
         plot(((1:nt)-1)*dt,mig(:,51),'k')
         ylabel('Amplitude','Fontsize',24)
         xlabel('Zeit [s]','Fontsize',24)
-        legend('SNR Input','SNR Migriert','Location','best')
+        legend('SNR Input','SNR Migriert','Location','NorthWest')
         set(gca,'Fontsize',24)
         print('-dpng','SNRreal.png');
         

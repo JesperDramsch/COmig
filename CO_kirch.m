@@ -37,7 +37,7 @@ for i_cmp=1:nx                              % Indices of neighbouring CMPs
             break;
         end
         
-        amp = nx/aper*4*(Tiefe*v)/(v^2*t);       % Weightfunction 
+        amp = 4*(Tiefe*v)/(v^2*t);       % Weightfunction 
         % based on Zhang Y. (2000)
         
         % Aperture limits

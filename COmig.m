@@ -35,7 +35,7 @@ vmin = 1750;    % Minimum test velocity [m/s]
 vmax = 2150;    % Maximum test velocity [m/s]
 vfinal = 1950;  % Final migration velocity [m/s]
 dv   = 100;      % Velocity increment [m/s]
-aper = 100;     % Aperturewidth [m]
+aper = 120;     % Aperturewidth [m]
 
 %% Open file
 % Original data

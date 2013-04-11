@@ -159,9 +159,9 @@ for v = vmin:dv:vmax;
         plot(((1:nt)-1)*dt,data(:,51,1)/max(data(:,51,1)),'k')
         ylabel('Normalisierte Amplitude','Fontsize',24)
         xlabel('Zeit [s]','Fontsize',24)
-        legend('Filtered data','Original data','Location','best')
+        legend('Filtered data','Original data','Location','NorthWest')
         set(gca,'Fontsize',24)
-        print('-dpng','wavelet.png');
+        print('-dpng','inoutNorm.png');
         
         %Input signal not normalized
         figure
@@ -170,10 +170,31 @@ for v = vmin:dv:vmax;
         plot(((1:nt)-1)*dt,data(:,51,1),'k')
         ylabel('Amplitude','Fontsize',24)
         xlabel('Zeit [s]','Fontsize',24)
-        legend('Filtered data','Original data','Location','best')
+        legend('Filtered data','Original data','Location','NorthWest')
         set(gca,'Fontsize',24)
-        print('-dpng','wavelet_nN.png');
+        print('-dpng','inout.png');
         
+        %Comparison results normalized
+        figure
+        plot(((1:nt)-1)*dt,mig(:,51,1)/max(mig(:,51,1)),'r')
+        hold on
+        plot(((1:nt)-1)*dt,data(:,51,1)/max(data(:,51,1)),'k')
+        ylabel('Normalisierte Amplitude','Fontsize',24)
+        xlabel('Zeit [s]','Fontsize',24)
+        legend('Migration result','Original data','Location','NorthWest')
+        set(gca,'Fontsize',24)
+        print('-dpng','waveletNorm.png');
+        
+        %Comparison results not normalized
+        figure
+        plot(((1:nt)-1)*dt,mig(:,51,1),'r')
+        hold on
+        plot(((1:nt)-1)*dt,data(:,51,1),'k')
+        ylabel('Amplitude','Fontsize',24)
+        xlabel('Zeit [s]','Fontsize',24)
+        legend('Migration result','Original data','Location','NorthWest')
+        set(gca,'Fontsize',24)
+        print('-dpng','wavelet.png');
         
         % Fileoutput of datamatrices
         dlmwrite('mig.dat',mig)

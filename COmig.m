@@ -18,7 +18,7 @@
 %}
 
 clear all       % Clear workspace
-close all       % Close figures  
+close all       % Close figures
 clc             % Clear command line window
 
 format long     % Double precision
@@ -106,7 +106,7 @@ for v = vmin:dv:vmax;
     set(gca,'Fontsize',24)
     set(gca,'XTickMode','manual')
     set(gca,'XTick',[0;2000;4000;6000;8000;10000])
-    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])            % rescaling x-axis 
+    set(gca,'XTickLabel',['  0  ';'2 / 0';'2 / 0';'2 / 0';'2 / 0';'  2  '])            % rescaling x-axis
     print('-dpng',sprintf('v%g.png',v));
     
     if v == vfinal  % If loop reaches the correct velocity (estimated with constant velocity scan)
@@ -151,6 +151,29 @@ for v = vmin:dv:vmax;
         SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));
         
         fprintf('Verbesserung der Signal-to-Noise ratio von %f2 auf %f2\n',SNRin,SNRout)
+        
+        %Input signal normalized
+        figure
+        plot(((1:nt)-1)*dt,filtdata(:,51,1)/max(filtdata(:,51,1)),'r')
+        hold on
+        plot(((1:nt)-1)*dt,data(:,51,1)/max(data(:,51,1)),'k')
+        ylabel('Normalisierte Amplitude','Fontsize',24)
+        xlabel('Zeit [s]','Fontsize',24)
+        legend('Filtered data','Original data','Location','best')
+        set(gca,'Fontsize',24)
+        print('-dpng','wavelet.png');
+        
+        %Input signal not normalized
+        figure
+        plot(((1:nt)-1)*dt,filtdata(:,51,1),'r')
+        hold on
+        plot(((1:nt)-1)*dt,data(:,51,1),'k')
+        ylabel('Amplitude','Fontsize',24)
+        xlabel('Zeit [s]','Fontsize',24)
+        legend('Filtered data','Original data','Location','best')
+        set(gca,'Fontsize',24)
+        print('-dpng','wavelet_nN.png');
+        
         
         % Fileoutput of datamatrices
         dlmwrite('mig.dat',mig)

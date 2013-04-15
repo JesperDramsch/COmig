@@ -1,4 +1,4 @@
- %{
+%{
 
 Comig.m - Constant offset Kirchhoff migration in time and depth.
 Copyright (C) 2013 Jesper S Dramsch, Matthias Schneider, Dela Spickermann, Jan Walda
@@ -31,11 +31,11 @@ nh = 5;          % Number of offsets
 Fs = 1/dt;       % Frequency sampling [Hz]
 hmax = 1000;     % Maximum half-offset [m]
 dh = 250;        % Offset increment [m]
-vmin = 1850;     % Minimum test velocity [m/s]
-vmax = 1850;     % Maximum test velocity [m/s]
-vfinal = 1850;   % Final migration velocity [m/s]
+vmin = 1750;     % Minimum test velocity [m/s]
+vmax = 2150;     % Maximum test velocity [m/s]
+vfinal = 1950;   % Final migration velocity [m/s]
 dv = 100;         % Velocity increment [m/s]
-aper = 1500;      % Aperturewidth [m]
+aper = 120;      % Aperturewidth [m]
 
 %% Open file
 % Original data
@@ -152,6 +152,34 @@ for v = vmin:dv:vmax;
         
         fprintf('Verbesserung der Signal-to-Noise ratio von %f2 auf %f2\n',SNRin,SNRout)
         
+        
+        %% Frequency analysis of migrated and summed data
+        %Use FFT and faxis vectors from above
+        migdata = fft(mean(mig,2),NFFT)/nt; % FFT of migrated dataset
+        
+        % Plot of the normalized frequency spektrum
+        fy = figure;
+        plot(faxis,abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))));
+        xlabel('Frequency [Hz]','Fontsize',24);
+        ylabel('Normalized Amplitude','Fontsize',24);
+        set(gca,'Fontsize',24)
+        set(fy, 'Position', [0 0 1280 1024] );    % Size of the new frame
+        axis ([0 75 0 1])
+        print('-dpng','freq_mig.png');                % Outputfile of figure
+        
+        
+        fx = figure(1);
+        plot(faxis,abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))),'k');
+        hold on
+        plot(faxis,abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))),'r');
+        xlabel('Frequency [Hz]','Fontsize',24);
+        ylabel('Normalized Amplitude','Fontsize',24);
+        legend('Original Data','Migrated Data')
+        set(gca,'Fontsize',24)
+        set(fx, 'Position', [0 0 1280 1024] );    % Size of the new frame
+        axis ([0 75 0 1])
+        print('-dpng','freq_comp.png');                % Outputfile of figure
+        
         % Fileoutput of datamatrices
         dlmwrite('mig.dat',mig)
         dlmwrite('COGatherh0.dat',Kirchhoffdepth(:,:,1));
@@ -162,23 +190,7 @@ for v = vmin:dv:vmax;
         
     end
     
-end 
-
-%% Frequency analysis of migrated and summed data
-
-%Use FFT and faxis vectors from above
-migdata = fft(mean(mig,2),NFFT)/nt; % FFT of migrated dataset
-
-% Plot of the normalized frequency spektrum
-fy = figure;
-plot(faxis,abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))));
-xlabel('Frequency [Hz]','Fontsize',24);
-ylabel('Normalized Amplitude','Fontsize',24);
-set(gca,'Fontsize',24)
-set(fy, 'Position', [0 0 1280 1024] );    % Size of the new frame
-axis ([0 75 0 1])
-print('-dpng','freq_mig.png');                % Outputfile of figure
-
+end
 
 %Input signal normalized
 figure

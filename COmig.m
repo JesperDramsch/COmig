@@ -168,7 +168,7 @@ for v = vmin:dv:vmax;
         print('-dpng','freq_mig.png');                % Outputfile of figure
         
         
-        fx = figure(1);
+        figure
         plot(faxis,abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))),'k');
         hold on
         plot(faxis,abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))),'r');

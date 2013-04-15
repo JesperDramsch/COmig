@@ -35,7 +35,7 @@ vmin = 1750;     % Minimum test velocity [m/s]
 vmax = 2150;     % Maximum test velocity [m/s]
 vfinal = 1950;   % Final migration velocity [m/s]
 dv = 100;         % Velocity increment [m/s]
-aper = 120;      % Aperturewidth [m]
+aper = 200;      % Aperturewidth [m]
 
 %% Open file
 % Original data
@@ -112,17 +112,17 @@ for v = vmin:dv:vmax;
     if v == vfinal % If loop reaches the correct velocity (estimated with constant velocity scan)
         mig(1:nt,1:ns) = sum(Kirchhoffdepth,3); % summing CO-Gather
         
-        % Plot of the migration result
+                % Plot of the migration result
         fx=figure(v+1);
         set(fx, 'Position', [0 0 1280 1024] );
-        imagesc(((1:ns)-1)*dcmp,Skala(:,1),mig(:,:),[-max(max(abs(mig))) max(max(abs(mig)))])
+        imagesc(((1:ns)-1)*dcmp/1000,Skala(:,1)/1000,mig(:,:),[-max(max(abs(mig))) max(max(abs(mig)))])
         %title('Tiefenmigration','Fontsize',24)
-        xlabel('CMP [m]','Fontsize',24)
-        ylabel('Depth [m]','Fontsize',24)
+        xlabel('CMP [km]','Fontsize',24)
+        ylabel('Depth [km]','Fontsize',24)
         colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
         colorbar
         set(gca,'Fontsize',24)
-        print('-dpng',sprintf('v%g.png',v));
+        print('-dpng',sprintf('sum_v%g.png',v));
         
         % Plot trace 51 normalized
         figure
@@ -131,7 +131,7 @@ for v = vmin:dv:vmax;
         plot(((1:nt)-1)*dt,mig(:,51)/max(mig(:,51)),'k')
         ylabel('Normalisierte Amplitude','Fontsize',24)
         xlabel('Zeit [s]','Fontsize',24)
-        legend('SNR Input','SNR Migriert','Location','best')
+        legend('SNR Input','SNR Migriert','Location','NorthWest')
         set(gca,'Fontsize',24)
         print('-dpng','SNRnorm.png');
         
@@ -142,7 +142,7 @@ for v = vmin:dv:vmax;
         plot(((1:nt)-1)*dt,mig(:,51),'k')
         ylabel('Amplitude','Fontsize',24)
         xlabel('Zeit [s]','Fontsize',24)
-        legend('SNR Input','SNR Migriert','Location','best')
+        legend('SNR Input','SNR Migriert','Location','NorthWest')
         set(gca,'Fontsize',24)
         print('-dpng','SNRreal.png');
         
@@ -151,6 +151,50 @@ for v = vmin:dv:vmax;
         SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));
         
         fprintf('Verbesserung der Signal-to-Noise ratio von %f2 auf %f2\n',SNRin,SNRout)
+        
+        %Input signal normalized
+        figure
+        plot(((1:nt)-1)*dt,filtdata(:,51,1)/max(filtdata(:,51,1)),'r')
+        hold on
+        plot(((1:nt)-1)*dt,data(:,51,1)/max(data(:,51,1)),'k')
+        ylabel('Normalisierte Amplitude','Fontsize',24)
+        xlabel('Zeit [s]','Fontsize',24)
+        legend('Filtered data','Original data','Location','NorthWest')
+        set(gca,'Fontsize',24)
+        print('-dpng','inoutNorm.png');
+        
+        %Input signal not normalized
+        figure
+        plot(((1:nt)-1)*dt,filtdata(:,51,1),'r')
+        hold on
+        plot(((1:nt)-1)*dt,data(:,51,1),'k')
+        ylabel('Amplitude','Fontsize',24)
+        xlabel('Zeit [s]','Fontsize',24)
+        legend('Filtered data','Original data','Location','NorthWest')
+        set(gca,'Fontsize',24)
+        print('-dpng','inout.png');
+        
+        %Comparison results normalized
+        figure
+        plot(((1:nt)-1)*dt,mig(:,51,1)/max(mig(:,51,1)),'r')
+        hold on
+        plot(((1:nt)-1)*dt,data(:,51,1)/max(data(:,51,1)),'k')
+        ylabel('Normalisierte Amplitude','Fontsize',24)
+        xlabel('Zeit [s]','Fontsize',24)
+        legend('Migration result','Original data','Location','NorthWest')
+        set(gca,'Fontsize',24)
+        print('-dpng','waveletNorm.png');
+        
+        %Comparison results not normalized
+        figure
+        plot(((1:nt)-1)*dt,mig(:,51,1),'r')
+        hold on
+        plot(((1:nt)-1)*dt,data(:,51,1),'k')
+        ylabel('Amplitude','Fontsize',24)
+        xlabel('Zeit [s]','Fontsize',24)
+        legend('Migration result','Original data','Location','NorthWest')
+        set(gca,'Fontsize',24)
+        print('-dpng','wavelet.png');
         
         
         %% Frequency analysis of migrated and summed data
@@ -199,7 +243,7 @@ hold on
 plot(((1:nt)-1)*dt,data(:,51,1)/max(data(:,51,1)),'k')
 ylabel('Normalisierte Amplitude','Fontsize',24)
 xlabel('Zeit [s]','Fontsize',24)
-legend('Filtered data','Original data','Location','best')
+legend('Filtered data','Original data','Location','NorthWest')
 set(gca,'Fontsize',24)
 print('-dpng','waveletNorm.png');
 
@@ -210,6 +254,6 @@ hold on
 plot(((1:nt)-1)*dt,data(:,51,1),'k')
 ylabel('Amplitude','Fontsize',24)
 xlabel('Zeit [s]','Fontsize',24)
-legend('Filtered data','Original data','Location','best')
+legend('Filtered data','Original data','Location','NorthWest')
 set(gca,'Fontsize',24)
 print('-dpng','wavelet.png');

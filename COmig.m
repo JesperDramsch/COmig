@@ -201,7 +201,7 @@ ylabel('Normalisierte Amplitude','Fontsize',24)
 xlabel('Zeit [s]','Fontsize',24)
 legend('Filtered data','Original data','Location','best')
 set(gca,'Fontsize',24)
-print('-dpng','wavelet.png');
+print('-dpng','waveletNorm.png');
 
 %Input signal not normalized
 figure
@@ -212,4 +212,4 @@ ylabel('Amplitude','Fontsize',24)
 xlabel('Zeit [s]','Fontsize',24)
 legend('Filtered data','Original data','Location','best')
 set(gca,'Fontsize',24)
-print('-dpng','wavelet_unnorm.png');
+print('-dpng','wavelet.png');

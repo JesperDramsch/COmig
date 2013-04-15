@@ -1,0 +1,16 @@
+*.eps
+*.dat
+*.pdf
+*.jpg
+*.png
+*.x
+*.~
+*.C
+*.H
+*.txt
+*.odp
+*.fig
+*.*~
+hex_seisorig
+seismiclab/
+#mig.m#

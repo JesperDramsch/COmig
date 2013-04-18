@@ -1,7 +1,3 @@
-                                                                     
-                                                                     
-                                                                     
-                                             
  %{
 
 CO_kirch.m - Constant offset Kirchhoff migration.

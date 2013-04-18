@@ -98,10 +98,10 @@ for v = vmin:dv:vmax;
     % CO-Gather for each velocity
     fx=figure(v);
     set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-max(max(max(abs(Kirchhoffdepth(1:nt-5,:,:))))) max(max(max(abs(Kirchhoffdepth(1:nt-5,:,:)))))])
+    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1)*1e-3,Kirchhoffdepth(:,:),[-max(max(max(abs(Kirchhoffdepth(1:nt-5,:,:))))) max(max(max(abs(Kirchhoffdepth(1:nt-5,:,:)))))])
     %title('Tiefenmigration','Fontsize',24)
-    xlabel('CMP','Fontsize',24)
-    ylabel('Depth [m]','Fontsize',24)
+    xlabel('CMP [km]','Fontsize',24)
+    ylabel('Depth [km]','Fontsize',24)
     set(gca,'Fontsize',24)
     colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])    % polarized plot
     colorbar
@@ -257,3 +257,4 @@ xlabel('Zeit [s]','Fontsize',24)
 legend('Filtered data','Original data','Location','NorthWest')
 set(gca,'Fontsize',24)
 print('-dpng','wavelet.png');
+close all

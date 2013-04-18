@@ -31,9 +31,9 @@ nh = 5;          % Number of offsets
 Fs = 1/dt;       % Frequency sampling [Hz]
 hmax = 1000;     % Maximum half-offset [m]
 dh = 250;        % Offset increment [m]
-vmin = 1750;     % Minimum test velocity [m/s]
-vmax = 2150;     % Maximum test velocity [m/s]
-vfinal = 1950;   % Final migration velocity [m/s]
+vmin = 2900;     % Minimum test velocity [m/s]
+vmax = 3300;     % Maximum test velocity [m/s]
+vfinal = 3100;   % Final migration velocity [m/s]
 dv = 100;         % Velocity increment [m/s]
 aper = 200;      % Aperturewidth [m]
 

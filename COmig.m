@@ -76,7 +76,6 @@ h=0:dh:hmax;                       % half offset
 t_orig=0:dt:((nt-1)*dt);
 i_v=0;
 aper_half = round(.5*aper/dcmp);      % half aperture
-z_len = length(z);
 % x-sampling = cmp-sampling
 
 %% Loop over velocities
@@ -86,6 +85,7 @@ for v = vmin:dv:vmax;
     t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
     zmax = max(t_depth);                    % Max depth [m]
     z=0:dz:zmax;                            % Depthsampling
+    z_len = length(z);
     Kirchhofftime(1:nt,1:ns,1:nh)=0;        % (time, CMP, halfoffset)
     Kirchhoffdepth(1:z_len,1:ns,1:nh)=0;% (depth, CMP, halfoffset)
     mig(1:z_len,1:ns)=0;                % stacking result

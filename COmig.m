@@ -60,6 +60,14 @@ fclose(fidfilt);
 
 
 %% Input Plots
+% Compare max amplitudes of each CMP in original data
+mig_graphs('OffsetLine',data,((1:ns)-1)*dcmp,'ampsorig')
+% Compare max amplitudes of each CMP in original data
+mig_graphs('OffsetLine',filtdata,((1:ns)-1)*dcmp,'ampsfilt')
+% Input signal normalized
+mig_graphs('CompLine','Filtered data',filtdata(:,51,1)/max(filtdata(:,51,1)),'Original data',data(:,51,1)/max(data(:,51,1)),((1:nt)-1)*dcmp,'Zeit [s]','Normalisierte Amplitude','waveletnorm')
+% Input signal not normalized
+mig_graphs('CompLine','Filtered data',filtdata(:,51,1),'Original data',data(:,51,1),((1:nt)-1)*dcmp,'Zeit [s]','Amplitude','waveletorig')
 
 %% Frequency analysis
 NFFT = 2^nextpow2(nt);                    % calculate next 2^n to prepare adta for FFT
@@ -97,22 +105,28 @@ for v = vmin:dv:vmax;
         % to get the feeling it still runs when using
         % interpolation at zdiff
         if kirch_time == 1
-        Kirchhofftime(:,:,i_h) = CO_kirch_time(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, aper_half);
-        z = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v*0.5; % Depth skaling
-        Kirchhoffdepth(:,:,i_h) = interp1(z(:,1),Kirchhoff(:,:,i_h),z(:,i_h),'spline');
+            Kirchhofftime(:,:,i_h) = CO_kirch_time(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, aper_half);
+            z = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v*0.5; % Depth skaling
+            Kirchhoffdepth(:,:,i_h) = interp1(z(:,1),Kirchhoff(:,:,i_h),z(:,i_h),'spline');
         end
         if kirch_depth == 1
-        [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dz, dcmp, aper_half, flag_interp);
+            [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dz, dcmp, aper_half, flag_interp);
         end
     end
     
     %% CO-Gather for each velocity
-    
+    mig_graphs('COG',COG(:,:),((1:ns*nh)-1)*dcmp,z,'Depth [km]',sprintf('COGv%g',v))    
+    % Compare max amplitude in each CMP in COG
+    mig_graphs('OffsetLine',COG,((1:ns)-1)*dcmp,sprintf('ampsv%g',v))
+        
     if v == vfinal % If loop reaches the correct velocity (estimated with constant velocity scan)
         % (estimated with constant velocity scan)
         mig(1:z_len,1:ns) = sum(Kirchhoffdepth,3); % summing CO-Gather
         
         %% Plot of the migration result
+        mig_graphs('PolarPlot',mig(:,:),((1:ns)-1)*dcmp/1000,z,'CMP [km]','Depth [km]',sprintf('vm%g',v))
+        % max amplitude of each CMP in migrated section
+        mig_graphs('SingleLine',max(abs(mig(:,:)),((1:ns)-1)*dcmp,'CMP','Maximum Amplitude','migamp.png')
         
         %% SNR plot
         

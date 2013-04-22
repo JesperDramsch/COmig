@@ -210,3 +210,15 @@ xlabel('Zeit [s]','Fontsize',24)
 legend('Migration result','Original data','Location','NorthWest')
 set(gca,'Fontsize',24)
 print('-dpng','wavelet.png');
+
+% Plot of the migration result
+fx=figure(v+1);
+set(fx, 'Position', [0 0 1280 1024] );
+imagesc(((1:ns)-1)*dcmp/1000,Skala(:,1)/1000,mig(:,:),[-max(max(abs(mig))) max(max(abs(mig)))])
+%title('Tiefenmigration','Fontsize',24)
+xlabel('CMP [km]','Fontsize',24)
+ylabel('Depth [km]','Fontsize',24)
+colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
+colorbar
+set(gca,'Fontsize',24)
+print('-dpng',sprintf('sum_v%g.png',v));

@@ -23,6 +23,8 @@ clc              % Clear command line window
 
 format long      % Double precision
 
+tStart = tic;    % runtime measurement
+
 dcmp = 20;       % CMP-Distance [m]
 dt = 2e-3;       % Samplinginterval [s]
 nt = 1001;       % Number of samples
@@ -30,12 +32,14 @@ ns = 101;        % Number of traces
 nh = 5;          % Number of offsets
 Fs = 1/dt;       % Frequency sampling [Hz]
 hmax = 1000;     % Maximum half-offset [m]
-dh = 250;        % Offset increment [m]
-vmin = 1750;     % Minimum test velocity [m/s]
-vmax = 2150;     % Maximum test velocity [m/s]
-vfinal = 1950;   % Final migration velocity [m/s]
-dv = 100;         % Velocity increment [m/s]
+dh = 250;        % half-offset increment [m]
+vmin = 2625;     % Minimum test velocity [m/s]
+vmax = 2625;     % Maximum test velocity [m/s]
+vfinal = 2625;   % Final migration velocity [m/s]
+dv = 100;        % Velocity increment [m/s]
 aper = 200;      % Aperturewidth [m]
+dz = 4;          % Depthsampling increment [m]
+interpolate=0;   % 1 = use interpolation, 0 = use rounding
 
 %% Open file
 % Original data
@@ -52,208 +56,89 @@ fidfilt = fopen(filenamefilt,'r');
 filtdata = reshape(fread(fidfilt, [nt nh*ns],'single'),nt,ns,nh);
 fclose(fidfilt);
 
+
+%% Input Plots
+
 %% Frequency analysis
 NFFT = 2^nextpow2(nt);                    % calculate next 2^n to prepare adta for FFT
 fdata = fft(mean(data(:,:,1),2),NFFT)/nt; % FFT of extended dataset
 faxis = Fs/2*linspace(0,1,NFFT/2+1);      % Skaling of the x-axis
 
-% Plot of the normalized frequency spektrum
-fx = figure(1);
-plot(faxis,abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))));
-xlabel('Frequency [Hz]','Fontsize',24);
-ylabel('Normalized Amplitude','Fontsize',24);
-%title('Frequency analysis','Fontsize',24)
-set(gca,'Fontsize',24)
-set(fx, 'Position', [0 0 1280 1024] );    % Size of the new frame
-axis ([0 75 0 1])
-print('-dpng','freq.png');                % Outputfile of figure
+%% Frequency Plot
 
 
 %% Kirchhoff migration
 
-% Half aperture
-half_aper = round(.5*aper/dcmp);
-
-% Initialising
-h = 0:dh:hmax;
-Kirchhoffdepth(1:nt,1:ns,1:nh)=0;
-i_v = 0;
-Kirchhoff(1:nt,1:ns,1:nh)=0;              %(time, CMP, offset)
-Skala(1:nt,1:nh) = 0;
-t=(0:nt-1)'*dt;
+%% discretizing and initializing
+h=0:dh:hmax;                       % half offset
+t_orig=0:dt:((nt-1)*dt);
+i_v=0;
+h_aper = round(.5*aper/dcmp);      % half aperture
+% x-sampling = cmp-sampling
 
 %% Loop over velocities
 for v = vmin:dv:vmax;
     i_v = i_v+1;
-    Kirchhoff(1:nt,1:ns,1:nh)=0;          %(time, CMP, offset)
-    Skala(1:nt,1:nh) = 0;
+    
+    t_depth=t_orig*v*0.5;              % TWT-time to depth conversion
+    zmax = max(t_depth);               % Max depth [m]
+    z=0:dz:zmax;                       % Depthsampling
+    COG(1:length(z),1:ns,1:nh)=0;      % (depth, CMP, halfoffset)
+    mig(1:length(z),1:ns)=0;           % stacking result
+    filt_interp(1:length(z),1:ns,1:nh)=0;
     
     %% loop over half offsets
     for i_h = 1:nh
+        disp('half offset'); disp((i_h-1)*dh);
+        % to get the feeling it still runs when using
+        % interpolation at zdiff
+        
         [Kirchhoff(:,:,i_h), Skala(:,i_h)] = CO_kirch(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, half_aper);
-        Kirchhoff(1,:,i_h) = 0;
         Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhoff(:,:,i_h),Skala(:,i_h),'spline');
     end
     
-    % CO-Gather for each velocity
-    fx=figure(v);
-    set(fx, 'Position', [0 0 1280 1024] );
-    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1),Kirchhoffdepth(:,:),[-max(max(max(abs(Kirchhoffdepth(1:nt-5,:,:))))) max(max(max(abs(Kirchhoffdepth(1:nt-5,:,:)))))])
-    %title('Tiefenmigration','Fontsize',24)
-    xlabel('CMP','Fontsize',24)
-    ylabel('Depth [m]','Fontsize',24)
-    set(gca,'Fontsize',24)
-    colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])    % polarized plot
-    colorbar
-    set(gca,'Fontsize',24)
-    set(gca,'XTickLabel',{' 0 ','2 / 0','2 / 0','2 / 0','2 / 0',' 2 '})                  % reskaling x-axis
-    print('-dpng',sprintf('v%g.png',v));
+    %% CO-Gather for each velocity
     
     if v == vfinal % If loop reaches the correct velocity (estimated with constant velocity scan)
-        mig(1:nt,1:ns) = sum(Kirchhoffdepth,3); % summing CO-Gather
+        % (estimated with constant velocity scan)
+        mig(1:length(z),1:ns) = sum(COG,3); % summing CO-Gather
         
-                % Plot of the migration result
-        fx=figure(v+1);
-        set(fx, 'Position', [0 0 1280 1024] );
-        imagesc(((1:ns)-1)*dcmp/1000,Skala(:,1)/1000,mig(:,:),[-max(max(abs(mig))) max(max(abs(mig)))])
-        %title('Tiefenmigration','Fontsize',24)
-        xlabel('CMP [km]','Fontsize',24)
-        ylabel('Depth [km]','Fontsize',24)
-        colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])
-        colorbar
-        set(gca,'Fontsize',24)
-        print('-dpng',sprintf('sum_v%g.png',v));
+        %% Plot of the migration result
         
-        % Plot trace 51 normalized
-        figure
-        plot(((1:nt)-1)*dt,filtdata(:,51,1)/max(filtdata(:,51,1)),'r')
-        hold on
-        plot(((1:nt)-1)*dt,mig(:,51)/max(mig(:,51)),'k')
-        ylabel('Normalisierte Amplitude','Fontsize',24)
-        xlabel('Zeit [s]','Fontsize',24)
-        legend('SNR Input','SNR Migriert','Location','NorthWest')
-        set(gca,'Fontsize',24)
-        print('-dpng','SNRnorm.png');
-        
-        % Plot trace 51 not normalized
-        figure
-        plot(((1:nt)-1)*dt,filtdata(:,51,1),'r')
-        hold on
-        plot(((1:nt)-1)*dt,mig(:,51),'k')
-        ylabel('Amplitude','Fontsize',24)
-        xlabel('Zeit [s]','Fontsize',24)
-        legend('SNR Input','SNR Migriert','Location','NorthWest')
-        set(gca,'Fontsize',24)
-        print('-dpng','SNRreal.png');
+        %% SNR plot
         
         % Calculation of Signal-to-Noise-Ratio
         SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
+        SNRorig = log(max(max(abs(data(:,:,1))))/mean(mean(abs(data(100:200,:)))));
         SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));
         
-        fprintf('Verbesserung der Signal-to-Noise ratio von %f2 auf %f2\n',SNRin,SNRout)
+        fprintf('Signal-to-Noise ratio von %f2 (filtered) bzw. %f2 (original) auf %f2\n',SNRin,SNRorig,SNRout)
         
-        %Input signal normalized
-        figure
-        plot(((1:nt)-1)*dt,filtdata(:,51,1)/max(filtdata(:,51,1)),'r')
-        hold on
-        plot(((1:nt)-1)*dt,data(:,51,1)/max(data(:,51,1)),'k')
-        ylabel('Normalisierte Amplitude','Fontsize',24)
-        xlabel('Zeit [s]','Fontsize',24)
-        legend('Filtered data','Original data','Location','NorthWest')
-        set(gca,'Fontsize',24)
-        print('-dpng','inoutNorm.png');
-        
-        %Input signal not normalized
-        figure
-        plot(((1:nt)-1)*dt,filtdata(:,51,1),'r')
-        hold on
-        plot(((1:nt)-1)*dt,data(:,51,1),'k')
-        ylabel('Amplitude','Fontsize',24)
-        xlabel('Zeit [s]','Fontsize',24)
-        legend('Filtered data','Original data','Location','NorthWest')
-        set(gca,'Fontsize',24)
-        print('-dpng','inout.png');
-        
-        %Comparison results normalized
-        figure
-        plot(((1:nt)-1)*dt,mig(:,51,1)/max(mig(:,51,1)),'r')
-        hold on
-        plot(((1:nt)-1)*dt,data(:,51,1)/max(data(:,51,1)),'k')
-        ylabel('Normalisierte Amplitude','Fontsize',24)
-        xlabel('Zeit [s]','Fontsize',24)
-        legend('Migration result','Original data','Location','NorthWest')
-        set(gca,'Fontsize',24)
-        print('-dpng','waveletNorm.png');
-        
-        %Comparison results not normalized
-        figure
-        plot(((1:nt)-1)*dt,mig(:,51,1),'r')
-        hold on
-        plot(((1:nt)-1)*dt,data(:,51,1),'k')
-        ylabel('Amplitude','Fontsize',24)
-        xlabel('Zeit [s]','Fontsize',24)
-        legend('Migration result','Original data','Location','NorthWest')
-        set(gca,'Fontsize',24)
-        print('-dpng','wavelet.png');
+        %% Ergebnis Plots
         
         
         %% Frequency analysis of migrated and summed data
         %Use FFT and faxis vectors from above
         migdata = fft(mean(mig,2),NFFT)/nt; % FFT of migrated dataset
         
-        % Plot of the normalized frequency spektrum
-        fy = figure;
-        plot(faxis,abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))));
-        xlabel('Frequency [Hz]','Fontsize',24);
-        ylabel('Normalized Amplitude','Fontsize',24);
-        set(gca,'Fontsize',24)
-        set(fy, 'Position', [0 0 1280 1024] );    % Size of the new frame
-        axis ([0 75 0 1])
-        print('-dpng','freq_mig.png');                % Outputfile of figure
-        
-        
-        figure
-        plot(faxis,abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))),'k');
-        hold on
-        plot(faxis,abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))),'r');
-        xlabel('Frequency [Hz]','Fontsize',24);
-        ylabel('Normalized Amplitude','Fontsize',24);
-        legend('Original Data','Migrated Data')
-        set(gca,'Fontsize',24)
-        set(fx, 'Position', [0 0 1280 1024] );    % Size of the new frame
-        axis ([0 75 0 1])
-        print('-dpng','freq_comp.png');                % Outputfile of figure
+        %% Frequency Plot of migraTION
         
         % Fileoutput of datamatrices
-        dlmwrite('mig.dat',mig)
-        dlmwrite('COGatherh0.dat',Kirchhoffdepth(:,:,1));
-        dlmwrite('COGatherh250.dat',Kirchhoffdepth(:,:,2));
-        dlmwrite('COGatherh500.dat',Kirchhoffdepth(:,:,3));
-        dlmwrite('COGatherh750.dat',Kirchhoffdepth(:,:,4));
-        dlmwrite('COGatherh1000.dat',Kirchhoffdepth(:,:,5));
+        dlmwrite('output/mig.dat',mig)
+        dlmwrite('output/COGatherh0.dat',COG(:,:,1));
+        dlmwrite('output/COGatherh250.dat',COG(:,:,2));
+        dlmwrite('output/COGatherh500.dat',COG(:,:,3));
+        dlmwrite('output/COGatherh750.dat',COG(:,:,4));
+        dlmwrite('output/COGatherh1000.dat',COG(:,:,5));
+        
+        %%% Für alte Amplitudenvergleiche müsste zurück interpoliert werden, da
+        %%% length(z) != length(t) und length(z) hängt von v ab, siehe
+        %%% t_depth=t_orig*v*0.5;
+        %%% zmax = max(t_depth);     % zmax nimmt mit steigendem v zu, aber
+        %%% z=0:dz:zmax;             % dz bleibt gleich !
         
     end
     
 end
 
-%Input signal normalized
-figure
-plot(((1:nt)-1)*dt,filtdata(:,51,1)/max(filtdata(:,51,1)),'r')
-hold on
-plot(((1:nt)-1)*dt,data(:,51,1)/max(data(:,51,1)),'k')
-ylabel('Normalisierte Amplitude','Fontsize',24)
-xlabel('Zeit [s]','Fontsize',24)
-legend('Filtered data','Original data','Location','NorthWest')
-set(gca,'Fontsize',24)
-print('-dpng','waveletNorm.png');
-
-%Input signal not normalized
-figure
-plot(((1:nt)-1)*dt,filtdata(:,51,1),'r')
-hold on
-plot(((1:nt)-1)*dt,data(:,51,1),'k')
-ylabel('Amplitude','Fontsize',24)
-xlabel('Zeit [s]','Fontsize',24)
-legend('Filtered data','Original data','Location','NorthWest')
-set(gca,'Fontsize',24)
-print('-dpng','wavelet.png');
+tElapsed = toc(tStart);               % calculation time

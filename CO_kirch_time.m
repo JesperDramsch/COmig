@@ -17,10 +17,10 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 %}
 
-function [Kirchhoff, Skala] = CO_kirch(data, v, h, dt, dcmp, half_aper)
+function [COG, Skala] = CO_kirch_time(data, v, h, dt, dcmp, half_aper)
 
 [nt,nx] = size(data);
-Kirchhoff = zeros(nt,nx);
+COG = zeros(nt,nx);
 %% Loop over CMPs
 for i_cmp=1:nx % Indices of neighbouring CMPs
     cmp = dcmp*i_cmp; % CMP-distance of the indices
@@ -50,11 +50,12 @@ for i_cmp=1:nx % Indices of neighbouring CMPs
         
 %% Loop over aperture
         for i_aper=bound_l:bound_r
-            Kirchhoff(i_t,i_aper)=Kirchhoff(i_t,i_aper)+data(it,i_cmp+i_aper)*amp;
+            COG(i_t,i_aper)=COG(i_t,i_aper)+data(it,i_cmp+i_aper)*amp;
         end
 
     end
 end
 % TWT, daher * 0.5
 Skala = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v*0.5; % Depth skaling
+COG(1,:,i_h) = 0;         % NaN avoiding
 return 

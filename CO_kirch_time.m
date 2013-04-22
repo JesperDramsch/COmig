@@ -56,6 +56,5 @@ for i_cmp=1:nx % Indices of neighbouring CMPs
     end
 end
 % TWT, daher * 0.5
-Skala = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v*0.5; % Depth skaling
 COG(1,:,i_h) = 0;         % NaN avoiding
 return 

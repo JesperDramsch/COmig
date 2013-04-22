@@ -18,14 +18,24 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 %}
 
-function [COG, Skala] = CO_kirch_depth(data, v, h, dt, dcmp, half_aper)
+function [COG] = CO_kirch_depth(data, v, h, dt, dcmp, aper_half)
+
+t_orig=0:dt:((nt-1)*dt);
+    t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
+    zmax = max(t_depth);                    % Max depth [m]
+    z=0:dz:zmax;                            % Depthsampling
+    z=0:dz:zmax;                            % Depthsampling
+COG(1:z_len,1:ns)=0;% (depth, CMP)
+
+
+
 
 %% Interpolation from t to z domain
 % must be calculated before because aperture may need data in front
 % of the current cmp
 for i_cmp = 1:ns
-    filt_interp(:,i_cmp,i_h) = interp1(t_depth,...
-        filtdata(:,i_cmp,i_h),z,'spline');
+    filt_interp(:,i_cmp) = interp1(t_depth,...
+        data(:,i_cmp),z,'spline');
 end
 
 %% Loop over CMPs
@@ -60,7 +70,7 @@ for i_cmp = 1:ns
             % ! only if with interpolation at zdiff
             if(interpolate==1)
                 res_interp = interp1(z,...
-                    filt_interp(:,i_aper,i_h),zdiff,'spline');
+                    filt_interp(:,i_aper),zdiff,'spline');
             end
             %% Compute amplitude correction
             cosphi = z(i_z)/sqrt(z(i_z)^2+h(i_h)^2);
@@ -69,7 +79,7 @@ for i_cmp = 1:ns
             %% Sum up along diffraction
             % ! with interpolation at zdiff
             if(interpolate==1)
-                COG(i_z,i_cmp,i_h) = COG(i_z,i_cmp,i_h) ...
+                COG(i_z,i_cmp) = COG(i_z,i_cmp) ...
                     + res_interp * weight;
             elseif(interpolate==0)
                 i_zdiff = floor(1.5+zdiff/dz);
@@ -77,15 +87,15 @@ for i_cmp = 1:ns
                 % start with index 1, +1+0.5 = +1.5
                 
                 % ! without interpolation at zdiff
-                COG(i_z,i_cmp,i_h) = COG(i_z,i_cmp,i_h) ...
-                    + filt_interp(i_zdiff,i_aper,i_h) * weight;
+                COG(i_z,i_cmp) = COG(i_z,i_cmp) ...
+                    + filt_interp(i_zdiff,i_aper) * weight;
             else
                 disp('Error, no valid method!');
             end
         end
     end
 end
-COG(1,:,i_h) = 0;         % NaN avoiding
+COG(1,:) = 0;         % NaN avoiding
 return
 
 

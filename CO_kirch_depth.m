@@ -41,14 +41,14 @@ end
 %% Loop over CMPs
 for i_cmp = 1:ns
     % Aperture limits
-    bound_l = max(floor(i_cmp-h_aper), 1);
-    bound_r = min(floor(i_cmp+h_aper), ns);
+    bound_l = max(floor(i_cmp-aper_half), 1);
+    bound_r = min(floor(i_cmp+aper_half), ns);
     
     % Control if everything runs smoothly
     disp(['     CMP ||' ' left boundary ||'...
         ' right boundary ||' ' half aperture ||' ' velocity']);
     disp([(i_cmp-1)*dcmp (bound_l-1)*dcmp...
-        (bound_r-1)*dcmp h_aper*dcmp v]);
+        (bound_r-1)*dcmp aper_half*dcmp v]);
     %% Loop over contributing samples (Aperture)
     for i_aper=bound_l:bound_r
         

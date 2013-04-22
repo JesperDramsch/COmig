@@ -97,12 +97,12 @@ for v = vmin:dv:vmax;
         % to get the feeling it still runs when using
         % interpolation at zdiff
         if kirch_time == 1
-        Kirchhofftime(:,:,i_h) = CO_kirch_time(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, half_aper);
+        Kirchhofftime(:,:,i_h) = CO_kirch_time(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, aper_half);
         z = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v*0.5; % Depth skaling
         Kirchhoffdepth(:,:,i_h) = interp1(z(:,1),Kirchhoff(:,:,i_h),z(:,i_h),'spline');
         end
         if kirch_depth == 1
-        [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, half_aper, flag_interp);
+        [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dz, dcmp, aper_half, flag_interp);
         end
     end
     

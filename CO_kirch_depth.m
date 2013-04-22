@@ -18,14 +18,16 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 %}
 
-function [COG] = CO_kirch_depth(data, v, h, dt, dcmp, aper_half)
+function [COG] = CO_kirch_depth(data, v, h, dt, dz, dcmp, aper_half, flag_interp)
 
+
+[nt,ns] = size(data);
 t_orig=0:dt:((nt-1)*dt);
     t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
     zmax = max(t_depth);                    % Max depth [m]
     z=0:dz:zmax;                            % Depthsampling
-    z=0:dz:zmax;                            % Depthsampling
-COG(1:z_len,1:ns)=0;% (depth, CMP)
+    z_len = length(z);
+COG(1:z_len,1:ns) = 0;                      % (depth, CMP)
 
 
 
@@ -57,31 +59,31 @@ for i_cmp = 1:ns
             
             % Compute diffraction hyperbola, /2 because data is TWT
             zdiff = 0.5*( sqrt(z(i_z)^2 ...
-                + ((i_cmp-i_aper)*dcmp-h(i_h)).^2) ...
+                + ((i_cmp-i_aper)*dcmp-h).^2) ...
                 + sqrt(z(i_z)^2 ...
-                + ((i_cmp-i_aper)*dcmp+h(i_h)).^2) );
+                + ((i_cmp-i_aper)*dcmp+h).^2) );
             
             % Exit if diffraction ist out of data
             if(zdiff > (max(z)))
                 break;
             end
             
-            %% Interpolate zdiff
+            %% flag_interp zdiff
             % ! only if with interpolation at zdiff
-            if(interpolate==1)
+            if(flag_interp==1)
                 res_interp = interp1(z,...
                     filt_interp(:,i_aper),zdiff,'spline');
             end
             %% Compute amplitude correction
-            cosphi = z(i_z)/sqrt(z(i_z)^2+h(i_h)^2);
+            cosphi = z(i_z)/sqrt(z(i_z)^2+h^2);
             weight = cosphi/sqrt(zdiff*v);
             
             %% Sum up along diffraction
             % ! with interpolation at zdiff
-            if(interpolate==1)
+            if(flag_interp==1)
                 COG(i_z,i_cmp) = COG(i_z,i_cmp) ...
                     + res_interp * weight;
-            elseif(interpolate==0)
+            elseif(flag_interp==0)
                 i_zdiff = floor(1.5+zdiff/dz);
                 % +0.5 so it get rounded correctly and + 1 so its
                 % start with index 1, +1+0.5 = +1.5

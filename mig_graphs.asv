@@ -1,12 +1,15 @@
 function mig_graphs(switcher,varargin)
 
 %% Farben definieren
+farbe = rand(nh,3);
+farbe(:,1)=sort(farbe(:,1));
+farbe(:,2)=sort(farbe(:,2),'Descend');
 
 switch switcher
-    %% Input data plots
+%% Input data plots
     
-    
-    
+        
+        
     case 'SingleLine'
         %% Frequency Plot
         % mig_graphs('SingleLine',abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))),faxis,'Frequencz [Hz]','Normalized Amplitude','freq.png')
@@ -21,8 +24,8 @@ switch switcher
         %title('Frequency analysis','Fontsize',24)
         
         
-        
-        
+     
+      
         
     case 'CompLine'
         % mig_graphs('CompLine',name1,input1,name2,input2,axis,xaxis,yaxis,output)
@@ -63,10 +66,6 @@ switch switcher
         % Input3: mig_graphs('OffsetLine',COG,((1:ns)-1)*dcmp,sprintf('ampsv%g',v))
         data = varagin{1};
         [nt,ns,nh] = size(data);
-        farbe = rand(nh,3);
-        farbe(:,1)=sort(farbe(:,1));
-        farbe(:,2)=sort(farbe(:,2),'Descend');
-        
         figure
         hold on
         for k=1:nh
@@ -76,9 +75,9 @@ switch switcher
         ylabel('Maximum amplitude','Fontsize',24)
         legend('h = 0','h = 250','h = 500','h = 750','h = 1000','Location','best')
         
-        
-        
-        
+
+
+
         
         
     case 'COG'
@@ -95,7 +94,7 @@ switch switcher
         
         set(gca,'XTickLabel',{' 0 ','2 / 0','2 / 0','2 / 0','2 / 0',' 2 '})                  % reskaling x-axis
         
-        
+
     case 'PolarPlot'
         %% Plot of the migration result
         % mig_graphs('PolarPlot',mig(:,:),((1:ns)-1)*dcmp/1000,z,'CMP [km]','Depth [km]',sprintf('vm%g',v))
@@ -120,5 +119,4 @@ end
 %%% z=0:dz:zmax;             % dz bleibt gleich !
 
 set(gca,'Fontsize',24)
-fileoutput=sprintf('%s/output/%s.png',pwd,varargin{end})
-print('-dpng',fileoutput);
+print('-dpng',sprintf('output/%c.png',varargin{end}));

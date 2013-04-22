@@ -67,7 +67,7 @@ fdata = fft(mean(data(:,:,1),2),NFFT)/nt; % FFT of extended dataset
 faxis = Fs/2*linspace(0,1,NFFT/2+1);      % Skaling of the x-axis
 
 %% Frequency Plot
-
+mig_graphs('SingleLine',abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))),faxis,'Frequencz [Hz]','Normalized Amplitude','freq')
 
 %% Kirchhoff migration
 

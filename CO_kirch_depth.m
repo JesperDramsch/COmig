@@ -23,10 +23,10 @@ function [COG] = CO_kirch_depth(data, v, h, dt, dz, dcmp, aper_half, flag_interp
 
 [nt,ns] = size(data);
 t_orig=0:dt:((nt-1)*dt);
-    t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
-    zmax = max(t_depth);                    % Max depth [m]
-    z=0:dz:zmax;                            % Depthsampling
-    z_len = length(z);
+t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
+zmax = max(t_depth);                    % Max depth [m]
+z=0:dz:zmax;                            % Depthsampling
+z_len = length(z);
 COG(1:z_len,1:ns) = 0;                      % (depth, CMP)
 
 
@@ -99,5 +99,3 @@ for i_cmp = 1:ns
 end
 COG(1,:) = 0;         % NaN avoiding
 return
-
-

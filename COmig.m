@@ -110,7 +110,7 @@ for v = vmin:dv:vmax;
     
     if v == vfinal % If loop reaches the correct velocity (estimated with constant velocity scan)
         % (estimated with constant velocity scan)
-        mig(1:z_len,1:ns) = sum(COG,3); % summing CO-Gather
+        mig(1:z_len,1:ns) = sum(Kirchhoffdepth,3); % summing CO-Gather
         
         %% Plot of the migration result
         

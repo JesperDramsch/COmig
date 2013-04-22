@@ -1,10 +1,6 @@
-                                                                     
-                                                                     
-                                                                     
-                                             
- %{
+%{
 
-CO_kirch.m - Constant offset Kirchhoff migration.
+CO_kirch_time.m - Common offset Kirchhoff migration.
 Copyright (C) 2013 Jesper S Dramsch, Matthias Schneider, Dela Spickermann, Jan Walda
 
 This program is free software: you can redistribute it and/or modify

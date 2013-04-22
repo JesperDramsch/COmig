@@ -1,6 +1,6 @@
 %{
 
-Comig.m - Constant offset Kirchhoff migration in time and depth.
+Comig.m - Common offset Kirchhoff migration in time and depth.
 Copyright (C) 2013 Jesper S Dramsch, Matthias Schneider, Dela Spickermann, Jan Walda
 
 This program is free software: you can redistribute it and/or modify

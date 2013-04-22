@@ -1,6 +1,6 @@
  %{
 
-COGkirch.m - Constant offset Kirchhoff depth-migration.
+COGkirch.m - Common offset Kirchhoff depth-migration.
 Copyright (C) 2013 Jesper S Dramsch, Matthias Schneider, 
                    Dela Spickermann, Jan Walda
 

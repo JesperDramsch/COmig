@@ -39,7 +39,7 @@ vfinal = 2625;   % Final migration velocity [m/s]
 dv = 100;        % Velocity increment [m/s]
 aper = 200;      % Aperturewidth [m]
 dz = 4;          % Depthsampling increment [m]
-interpolate=0;   % 1 = use interpolation, 0 = use rounding
+flag_interp = 0;   % 1 = use interpolation, 0 = use rounding
 kirch_time=0;    % Time Migration
 kirch_depth=1;   % Depth Migration
 
@@ -102,7 +102,7 @@ for v = vmin:dv:vmax;
         Kirchhoffdepth(:,:,i_h) = interp1(z(:,1),Kirchhoff(:,:,i_h),z(:,i_h),'spline');
         end
         if kirch_depth == 1
-        [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, half_aper);
+        [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, half_aper, flag_interp);
         end
     end
     

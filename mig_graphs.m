@@ -33,14 +33,14 @@ switch switcher
         % Input4: mig_graphs('CompLine','Original Data',data(:,51,1),'Migrated Data',mig(:,51,1),((1:nt)-1)*dt,'Zeit [s]','Amplitude','wavelet')
         figure
         hold on
-        plot(varagin{2},varagin{1},'r')
-        plot(varagin{4},varagin{2},'k')
-        ylabel(varargin{6},'Fontsize',24)
-        xlabel(varargin{5},'Fontsize',24)
+        plot(varargin{5},varargin{2},'k')
+        plot(varargin{5},varargin{4},'r')
+        ylabel(varargin{7},'Fontsize',24)
+        xlabel(varargin{6},'Fontsize',24)
         legend(varargin{1},varargin{3},'Location','NorthWest')
         
     case 'OffsetLine'
-        data = varagin{1};
+        data = varargin{1};
         [nt,ns,nh] = size(data);
         farbe = rand(nh,3);
         farbe(:,1)=sort(farbe(:,1));
@@ -49,7 +49,7 @@ switch switcher
         figure
         hold on
         for k=1:nh
-            plot(varagin{2},max(abs(data(:,:,k)),[],1),'Color',farbe(k,:))
+            plot(varargin{2},max(abs(data(:,:,k)),[],1),'Color',farbe(k,:))
         end
         xlabel('CMP','Fontsize',24)
         ylabel('Maximum amplitude','Fontsize',24)
@@ -65,7 +65,7 @@ switch switcher
         
         colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])    % polarized plot
         colorbar
-        
+        set(gca,'XTick',(0:5)*2e3)                  
         set(gca,'XTickLabel',{' 0 ','2 / 0','2 / 0','2 / 0','2 / 0',' 2 '})                  % reskaling x-axis
         
         

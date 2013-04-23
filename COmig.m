@@ -33,9 +33,9 @@ nh = 5;          % Number of offsets
 Fs = 1/dt;       % Frequency sampling [Hz]
 hmax = 1000;     % Maximum half-offset [m]
 dh = 250;        % half-offset increment [m]
-vmin = 2625;     % Minimum test velocity [m/s]
-vmax = 2625;     % Maximum test velocity [m/s]
-vfinal = 2625;   % Final migration velocity [m/s]
+vmin = 2650;     % Minimum test velocity [m/s]
+vmax = 2850;     % Maximum test velocity [m/s]
+vfinal = 2750;   % Final migration velocity [m/s]
 dv = 100;        % Velocity increment [m/s]
 aper = 200;      % Aperturewidth [m]
 dz = 4;          % Depthsampling increment [m]
@@ -111,6 +111,7 @@ for v = vmin:dv:vmax;
         end
         if kirch_depth == 1
             [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dz, dcmp, aper_half, flag_interp);
+            COG = Kirchhoffdepth; %Was schlaueres überlegen
         end
     end
     
@@ -126,7 +127,7 @@ for v = vmin:dv:vmax;
         %% Plot of the migration result
         mig_graphs('PolarPlot',mig(:,:),((1:ns)-1)*dcmp/1000,z,'CMP [km]','Depth [km]',sprintf('vm%g',v))
         % max amplitude of each CMP in migrated section
-        mig_graphs('SingleLine',max(abs(mig(:,:)),((1:ns)-1)*dcmp,'CMP','Maximum Amplitude','migamp.png')
+        mig_graphs('SingleLine',max(abs(mig(:,:))),((1:ns)-1)*dcmp,'CMP','Maximum Amplitude','migamp.png')
         
         %% SNR plot
         

@@ -23,12 +23,12 @@ function [COG] = CO_kirch_depth(data, v, h, dt, dz, dcmp, aper_half, flag_interp
 
 [nt,ns] = size(data);
 t_orig=0:dt:((nt-1)*dt);
-    t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
-    zmax = max(t_depth);                    % Max depth [m]
-    z=0:dz:zmax;                            % Depthsampling
-    z_len = length(z);
+t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
+z_max = max(t_depth);                    % Max depth [m]
+z=(0:dz:z_max)';                            % Depthsampling
+z_len = length(z);
 COG(1:z_len,1:ns) = 0;                      % (depth, CMP)
-
+cosphi = z./sqrt(z.^2+h^2);
 
 
 
@@ -47,57 +47,48 @@ for i_cmp = 1:ns
     bound_r = min(floor(i_cmp+aper_half), ns);
     
     % Control if everything runs smoothly
+    %{
     disp(['     CMP ||' ' left boundary ||'...
         ' right boundary ||' ' half aperture ||' ' velocity']);
     disp([(i_cmp-1)*dcmp (bound_l-1)*dcmp...
         (bound_r-1)*dcmp aper_half*dcmp v]);
+    %}
+    fprintf('||\tCMP \t||\tleft boundary \t||\tright boundary \t||\thalf aperture \t||\tvelocity\t||\n||\t%4g \t||\t\t%4g\t\t||\t\t%4g\t\t||\t\t%4g\t\t||\t%4g\t\t||\n',(i_cmp-1)*dcmp,(bound_l-1)*dcmp,...
+        (bound_r-1)*dcmp,aper_half*dcmp,v)
     %% Loop over contributing samples (Aperture)
     for i_aper=bound_l:bound_r
+        % Compute diffraction hyperbola, /2 because data is not TWT but depth
+        z_diff = 0.5*( sqrt(z.^2 ...
+            + ((i_cmp-i_aper)*dcmp-h).^2) ...
+            + sqrt(z.^2 ...
+            + ((i_cmp-i_aper)*dcmp+h).^2) );
         
-        %% Loop over Depth
-        for i_z=1:length(z)
-            
-            % Compute diffraction hyperbola, /2 because data is TWT
-            zdiff = 0.5*( sqrt(z(i_z)^2 ...
-                + ((i_cmp-i_aper)*dcmp-h).^2) ...
-                + sqrt(z(i_z)^2 ...
-                + ((i_cmp-i_aper)*dcmp+h).^2) );
-            
-            % Exit if diffraction ist out of data
-            if(zdiff > (max(z)))
-                break;
-            end
-            
-            %% flag_interp zdiff
-            % ! only if with interpolation at zdiff
-            if(flag_interp==1)
-                res_interp = interp1(z,...
-                    filt_interp(:,i_aper),zdiff,'spline');
-            end
-            %% Compute amplitude correction
-            cosphi = z(i_z)/sqrt(z(i_z)^2+h^2);
-            weight = cosphi/sqrt(zdiff*v);
+        % Exit if diffraction ist out of data
+        z_flag = (z_diff - z_max <= 0);
+        
+        %% Compute amplitude correction
+        weight = cosphi./sqrt(z_diff.*v);
+        
+        %% flag_interp zdiff
+        % ! only if with interpolation at zdiff
+        if(flag_interp==1)
+            res_interp = interp1(z,filt_interp(:,i_aper),z_diff,'spline');
             
             %% Sum up along diffraction
             % ! with interpolation at zdiff
-            if(flag_interp==1)
-                COG(i_z,i_cmp) = COG(i_z,i_cmp) ...
-                    + res_interp * weight;
-            elseif(flag_interp==0)
-                i_zdiff = floor(1.5+zdiff/dz);
-                % +0.5 so it get rounded correctly and + 1 so its
-                % start with index 1, +1+0.5 = +1.5
-                
-                % ! without interpolation at zdiff
-                COG(i_z,i_cmp) = COG(i_z,i_cmp) ...
-                    + filt_interp(i_zdiff,i_aper) * weight;
-            else
-                disp('Error, no valid method!');
-            end
+            COG(:,i_cmp) = COG(:,i_cmp) ...
+                + res_interp .* weight .* z_flag;
+        elseif(flag_interp==0)
+            i_zdiff = ((floor(1.5+z_diff./dz)-1).*z_flag)+1;
+            % +0.5 so it get rounded correctly and + 1 so its
+            % start with index 1, +1+0.5 = +1.5
+            % ! without interpolation at zdiff
+            COG(:,i_cmp) = COG(:,i_cmp) ...
+                + filt_interp(i_zdiff,i_aper) .* weight .* z_flag;
+        else
+            disp('Error, no valid method!');
         end
     end
 end
 COG(1,:) = 0;         % NaN avoiding
 return
-
-

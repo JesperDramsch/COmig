@@ -74,6 +74,9 @@ for i_cmp = 1:ns
         if(flag_interp==1)
             res_interp = interp1(z,filt_interp(:,i_aper),z_diff,'spline');
             
+            % Sinc approach leaves "Sinc-reverb" Looks funny, try it :-)
+            %res_interp = sinc(z_diff(:,ones(size(z))) - z(:,ones(size(z_diff)))')*filt_interp(:,i_aper);
+
             %% Sum up along diffraction
             % ! with interpolation at zdiff
             COG(:,i_cmp) = COG(:,i_cmp) ...

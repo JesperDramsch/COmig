@@ -33,8 +33,8 @@ nh = 5;          % Number of offsets
 Fs = 1/dt;       % Frequency sampling [Hz]
 hmax = 1000;     % Maximum half-offset [m]
 dh = 250;        % half-offset increment [m]
-vmin = 2750;     % Minimum test velocity [m/s]
-vmax = 2750;     % Maximum test velocity [m/s]
+vmin = 2550;     % Minimum test velocity [m/s]
+vmax = 2950;     % Maximum test velocity [m/s]
 vfinal = 2750;   % Final migration velocity [m/s]
 dv = 100;        % Velocity increment [m/s]
 aper = 200;      % Aperturewidth [m]
@@ -111,7 +111,7 @@ for v = vmin:dv:vmax;
         end
         if kirch_depth == 1
             [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dz, dcmp, aper_half, flag_interp);
-            COG = Kirchhoffdepth; %Was schlaueres überlegen
+            COG = Kirchhoffdepth; %Was schlaueres ï¿½berlegen
         end
     end
     

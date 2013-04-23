@@ -33,9 +33,9 @@ nh = 5;          % Number of offsets
 Fs = 1/dt;       % Frequency sampling [Hz]
 hmax = 1000;     % Maximum half-offset [m]
 dh = 250;        % half-offset increment [m]
-vmin = 2625;     % Minimum test velocity [m/s]
-vmax = 2625;     % Maximum test velocity [m/s]
-vfinal = 2625;   % Final migration velocity [m/s]
+vmin = 2900;     % Minimum test velocity [m/s]
+vmax = 3300;     % Maximum test velocity [m/s]
+vfinal = 3100;   % Final migration velocity [m/s]
 dv = 100;        % Velocity increment [m/s]
 aper = 200;      % Aperturewidth [m]
 dz = 4;          % Depthsampling increment [m]
@@ -107,6 +107,9 @@ for v = vmin:dv:vmax;
     end
     
     %% CO-Gather for each velocity
+    imagesc(((1:ns*nh)-1)*dcmp,Skala(:,1)*1e-3,Kirchhoffdepth(:,:),[-max(max(max(abs(Kirchhoffdepth(1:nt-5,:,:))))) max(max(max(abs(Kirchhoffdepth(1:nt-5,:,:)))))])
+    xlabel('CMP [km]','Fontsize',24)
+    ylabel('Depth [km]','Fontsize',24)
     
     if v == vfinal % If loop reaches the correct velocity (estimated with constant velocity scan)
         % (estimated with constant velocity scan)
@@ -151,3 +154,4 @@ for v = vmin:dv:vmax;
 end
 
 tElapsed = toc(tStart);               % calculation time
+close all

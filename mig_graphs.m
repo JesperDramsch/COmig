@@ -2,44 +2,24 @@ function mig_graphs(switcher,varargin)
 
 switch switcher
     case 'SingleLine'
-        %% Frequency Plot
-        % mig_graphs('SingleLine',abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))),faxis,'Frequencz [Hz]','Normalized Amplitude','freq.png')
-        % Migration result
-        % mig_graphs('SingleLine',abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))),faxis,'Frequencz [Hz]','Normalized Amplitude','freq_mig.png')
-        
+        % Template: mig_graphs('SingleLine',data,axis,xlabel,ylabel,fileoutput)
         figure
         plot(varargin{2},varargin{1},'k');
         xlabel(varargin{3},'Fontsize',24);
         ylabel(varargin{4},'Fontsize',24);
         
     case 'CompLine'
-        % mig_graphs('CompLine',name1,input1,name2,input2,axis,xaxis,yaxis,output)
-        
-        % Frequency Comparison
-        % Input3: mig_graphs('CompLine','Original data',abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))),((1:nt)-1)*dcmp,'Migrated data',abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))),faxis,'Frequency [Hz]','Normalized Amplitude','freq_comp')
-        %% SNR
-        % Plot trace 51 normalized
-        % Input4: mig_graphs('CompLine','SNR Input',filtdata(:,51,1)/max(filtdata(:,51,1)),'SNR Migriert',mig(:,51)/max(mig(:,51)),((1:nt)-1)*dt,'Zeit [s]','Normalized Amplitude','SNRnorm')
-        % Plot trace 51 not normalized
-        % Input4: mig_graphs('CompLine','SNR Input',filtdata(:,51,1),'SNR Migriert',mig(:,51),((1:nt)-1)*dt,'Zeit [s]','Amplitude','SNRreal')
-        %% Ergebnis Plots
-        % Input signal normalized
-        % Input4: mig_graphs('CompLine','Original Data',data(:,51,1)/max(data(:,51,1)),'Filtered Data',filtdata(:,51,1)/max(filtdata(:,51,1)),((1:nt)-1)*dt,'Zeit [s]','Normalized Amplitude','inoutNorm')
-        % Input signal not normalized
-        % Input4: mig_graphs('CompLine','Original Data',data(:,51,1),'Filtered Data',filtdata(:,51,1),((1:nt)-1)*dt,'Zeit [s]','Amplitude','inout')
-        % Comparison results normalized
-        % Input4: mig_graphs('CompLine','Original Data',data(:,51,1)/max(data(:,51,1)),'Migrated Data',mig(:,51,1)/max(mig(:,51,1)),((1:nt)-1)*dt,'Zeit [s]','Normalized Amplitude','waveletNorm')
-        % Comparison results not normalized
-        % Input4: mig_graphs('CompLine','Original Data',data(:,51,1),'Migrated Data',mig(:,51,1),((1:nt)-1)*dt,'Zeit [s]','Amplitude','wavelet')
+        % Template: mig_graphs('CompLine',name1,input1,name2,input2,axis,xaxis,yaxis,output)
         figure
         hold on
         plot(varargin{5},varargin{2},'k')
         plot(varargin{5},varargin{4},'r')
         ylabel(varargin{7},'Fontsize',24)
         xlabel(varargin{6},'Fontsize',24)
-        legend(varargin{1},varargin{3},'Location','NorthWest')
+        legend(varargin{1},varargin{3},'Location','NorthEast')
         
     case 'OffsetLine'
+        % Template: mig_graphs('OffsetLine',data,axis,name)
         data = varargin{1};
         [nt,ns,nh] = size(data);
         farbe = rand(nh,3);
@@ -56,13 +36,11 @@ switch switcher
         legend('h = 0','h = 250','h = 500','h = 750','h = 1000','Location','best')
         
     case 'COG'
-        
+        % Template: mig_graphs('COG',data,CMPaxis,yaxis,ylabel,name)
         figure
         imagesc(varargin{2},varargin{3},varargin{1},[-max(max(max(abs(varargin{1})))) +max(max(max(abs(varargin{1}))))])
-        %title('Tiefenmigration','Fontsize',24)
         xlabel('CMP [km]','Fontsize',24)
         ylabel(varargin{4},'Fontsize',24)
-        
         colormap([ones(101,1),(0:.01:1)',(0:.01:1)';(1:-.01:0)',(1:-.01:0)',ones(101,1)])    % polarized plot
         colorbar
         set(gca,'XTick',(0:5)*2e3)                  
@@ -70,8 +48,7 @@ switch switcher
         
         
     case 'PolarPlot'
-        %% Plot of the migration result
-        % mig_graphs('PolarPlot',mig(:,:),((1:ns)-1)*dcmp/1000,z/1000,'CMP [km]','Depth [km]',sprintf('sum_vm%g',v))
+        % Template: mig_graphs('PolarPlot',data,yaxis,xaxis,xlabel,ylabel,name)
         figure
         imagesc(varargin{2},varargin{3},varargin{1},[-max(max(max(abs(varargin{1})))) +max(max(max(abs(varargin{1}))))])
         %title('Tiefenmigration','Fontsize',24)
@@ -84,8 +61,8 @@ switch switcher
     otherwise
         warndlg('Please choose valid Graph option')
 end
-%%% FÃ¼r alte traceplots mÃ¼sste zurÃ¼ck interpoliert werden, da
-%%% length(z) != length(t) und length(z) hÃ¤ngt von v ab, siehe
+%%% Für alte traceplots müsste zurück interpoliert werden, da
+%%% length(z) != length(t) und length(z) hängt von v ab, siehe
 %%% t_depth=t_orig*v*0.5;
 %%% zmax = max(t_depth);     % zmax nimmt mit steigendem v zu, aber
 %%% z=0:dz:zmax;             % dz bleibt gleich !

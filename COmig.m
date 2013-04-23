@@ -116,36 +116,53 @@ for v = vmin:dv:vmax;
     end
     
     %% CO-Gather for each velocity
-    mig_graphs('COG',COG(:,:),((1:ns*nh)-1)*dcmp,z,'Depth [km]',sprintf('COGv%g',v))    
+    mig_graphs('COG',COG(:,:),((1:ns*nh)-1)*dcmp,z,'Depth [km]',sprintf('COGv%g',v))
     % Compare max amplitude in each CMP in COG
     mig_graphs('OffsetLine',COG,((1:ns)-1)*dcmp,sprintf('ampsv%g',v))
-        
+    
     if v == vfinal % If loop reaches the correct velocity (estimated with constant velocity scan)
         % (estimated with constant velocity scan)
         mig(1:z_len,1:ns) = sum(Kirchhoffdepth,3); % summing CO-Gather
         
         %% Plot of the migration result
-        mig_graphs('PolarPlot',mig(:,:),((1:ns)-1)*dcmp/1000,z,'CMP [km]','Depth [km]',sprintf('vm%g',v))
+        mig_graphs('PolarPlot',mig(:,:),((1:ns)-1)*dcmp/1000,z,'CMP [km]','Depth [km]',sprintf('sum_vm%g',v))
         % max amplitude of each CMP in migrated section
-        mig_graphs('SingleLine',max(abs(mig(:,:))),((1:ns)-1)*dcmp,'CMP','Maximum Amplitude','migamp.png')
+        mig_graphs('SingleLine',max(abs(mig(:,:))),((1:ns)-1)*dcmp,'CMP','Maximum Amplitude','migamp')
         
-        %% SNR plot
-        
-        % Calculation of Signal-to-Noise-Ratio
+        %% Calculation of Signal-to-Noise-Ratio
         SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
         SNRorig = log(max(max(abs(data(:,:,1))))/mean(mean(abs(data(100:200,:)))));
         SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));
-        
+        if kirch_time == 1
+            % Plot trace 51 normalized
+            mig_graphs('CompLine','SNR Input',filtdata(:,51,1)/max(filtdata(:,51,1)),'SNR Migriert',mig(:,51)/max(mig(:,51)),((1:nt)-1)*dt,'Zeit [s]','Normalized Amplitude','SNRnorm')
+            % Plot trace 51 not normalized
+            mig_graphs('CompLine','SNR Input',filtdata(:,51,1),'SNR Migriert',mig(:,51),((1:nt)-1)*dt,'Zeit [s]','Amplitude','SNRreal')
+            
+            % Comparison results normalized
+            mig_graphs('CompLine','Original Data',data(:,51,1)/max(data(:,51,1)),'Migrated Data',mig(:,51,1)/max(mig(:,51,1)),((1:nt)-1)*dt,'Zeit [s]','Normalized Amplitude','waveletNorm')
+            % Comparison results not normalized
+            mig_graphs('CompLine','Original Data',data(:,51,1),'Migrated Data',mig(:,51,1),((1:nt)-1)*dt,'Zeit [s]','Amplitude','wavelet')
+            
+        end
+        % Output to screen
         fprintf('Signal-to-Noise ratio von %f2 (filtered) bzw. %f2 (original) auf %f2\n',SNRin,SNRorig,SNRout)
         
         %% Ergebnis Plots
+        % Input signal normalized
+        mig_graphs('CompLine','Original Data',data(:,51,1)/max(data(:,51,1)),'Filtered Data',filtdata(:,51,1)/max(filtdata(:,51,1)),((1:nt)-1)*dt,'Zeit [s]','Normalized Amplitude','inoutNorm')
+        % Input signal not normalized
+        mig_graphs('CompLine','Original Data',data(:,51,1),'Filtered Data',filtdata(:,51,1),((1:nt)-1)*dt,'Zeit [s]','Amplitude','inout')
         
         
         %% Frequency analysis of migrated and summed data
         %Use FFT and faxis vectors from above
         migdata = fft(mean(mig,2),NFFT)/nt; % FFT of migrated dataset
         
-        %% Frequency Plot of migraTION
+        %% Frequency Plot of migration
+        mig_graphs('SingleLine',abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))),faxis,'Frequencz [Hz]','Normalized Amplitude','freq_mig')
+        % Frequency Comparison
+        mig_graphs('CompLine','Original data',abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))),'Migrated data',abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))),faxis,'Frequency [Hz]','Normalized Amplitude','freq_comp')
         
         % Fileoutput of datamatrices
         dlmwrite('output/mig.dat',mig)
@@ -164,5 +181,4 @@ for v = vmin:dv:vmax;
     end
     
 end
-
 tElapsed = toc(tStart);               % calculation time

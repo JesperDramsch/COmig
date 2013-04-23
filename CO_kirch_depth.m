@@ -22,7 +22,7 @@ function [COG] = CO_kirch_depth(data, v, h, dt, dz, dcmp, aper_half, flag_interp
 
 
 [nt,ns] = size(data);
-t_orig=0:dt:((nt-1)*dt);
+t_orig=(0:dt:((nt-1)*dt))';
 t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
 z_max = max(t_depth);                    % Max depth [m]
 z=(0:dz:z_max)';                            % Depthsampling

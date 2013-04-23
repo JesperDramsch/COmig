@@ -24,11 +24,11 @@ function [COG] = CO_kirch_depth(data, v, h, dt, dz, dcmp, aper_half, flag_interp
 [nt,ns] = size(data);
 t_orig=0:dt:((nt-1)*dt);
 t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
-zmax = max(t_depth);                    % Max depth [m]
-z=0:dz:zmax;                            % Depthsampling
+z_max = max(t_depth);                    % Max depth [m]
+z=0:dz:z_max;                            % Depthsampling
 z_len = length(z);
 COG(1:z_len,1:ns) = 0;                      % (depth, CMP)
-
+cosphi = z./sqrt(z.^2+h^2);
 
 
 
@@ -55,36 +55,34 @@ for i_cmp = 1:ns
     for i_aper=bound_l:bound_r
         
         %% Loop over Depth
-        for i_z=1:length(z)
+        for i_z=1:z_len
             
             % Compute diffraction hyperbola, /2 because data is not TWT but depth
-            zdiff = 0.5*( sqrt(z(i_z)^2 ...
+            z_diff = 0.5*( sqrt(z(i_z)^2 ...
                 + ((i_cmp-i_aper)*dcmp-h).^2) ...
                 + sqrt(z(i_z)^2 ...
                 + ((i_cmp-i_aper)*dcmp+h).^2) );
             
             % Exit if diffraction ist out of data
-            if(zdiff > (max(z)))
+            if(z_diff > z_max)
                 break;
             end
+            
+            %% Compute amplitude correction
+            weight = cosphi(i_z)/sqrt(z_diff*v);
             
             %% flag_interp zdiff
             % ! only if with interpolation at zdiff
             if(flag_interp==1)
                 res_interp = interp1(z,...
-                    filt_interp(:,i_aper),zdiff,'spline');
-            end
-            %% Compute amplitude correction
-            cosphi = z(i_z)/sqrt(z(i_z)^2+h^2);
-            weight = cosphi/sqrt(zdiff*v);
-            
-            %% Sum up along diffraction
-            % ! with interpolation at zdiff
-            if(flag_interp==1)
+                    filt_interp(:,i_aper),z_diff,'spline');
+                
+                %% Sum up along diffraction
+                % ! with interpolation at zdiff
                 COG(i_z,i_cmp) = COG(i_z,i_cmp) ...
                     + res_interp * weight;
             elseif(flag_interp==0)
-                i_zdiff = floor(1.5+zdiff/dz);
+                i_zdiff = floor(1.5+z_diff/dz);
                 % +0.5 so it get rounded correctly and + 1 so its
                 % start with index 1, +1+0.5 = +1.5
                 

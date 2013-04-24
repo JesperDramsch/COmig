@@ -88,8 +88,8 @@ switch switcher
     otherwise
         warndlg('Please choose valid Graph option')
 end
-%%% Für alte traceplots müsste zurück interpoliert werden, da
-%%% length(z) != length(t) und length(z) hängt von v ab, siehe
+%%% Fuer alte traceplots muesste zurueck interpoliert werden, da
+%%% length(z) != length(t) und length(z) haengt von v ab, siehe
 %%% t_depth=t_orig*v*0.5;
 %%% zmax = max(t_depth);     % zmax nimmt mit steigendem v zu, aber
 %%% z=0:dz:zmax;             % dz bleibt gleich !

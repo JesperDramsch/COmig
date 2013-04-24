@@ -3,6 +3,7 @@
 *.dat
 *.pdf
 *.jpg
+*.mat
 *.png
 *.x
 *.~

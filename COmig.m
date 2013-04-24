@@ -40,8 +40,8 @@ dv = 100;        % Velocity increment [m/s]
 aper = 200;      % Aperturewidth [m]
 dz = 4;          % Depthsampling increment [m]
 flag_interp = 1;   % 1 = use interpolation, 0 = use rounding
-kirch_time=1;    % Time Migration
-kirch_depth=0;   % Depth Migration
+kirch_time=0;    % Time Migration
+kirch_depth=1;   % Depth Migration
 
 %% Open file
 % Original data

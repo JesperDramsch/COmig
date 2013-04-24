@@ -1,12 +1,32 @@
 function mig_graphs(switcher,varargin)
-% mig_graphs(Plotname,varargin)
-% Use:
-% SingleLine for Lineplot, i.e. Frequency plots
-% CompLine for Two Lineplots, i.e. Trace comparison
-% OffsetLine for one Lineplot per Offset, i.e. Amplitudechecks of different Offsets
-% COG for Constant Offset Plots
-% PolarPlot for seismic Polarity Plot, i.e. Summation of Migration result
-% For templates see individual Plot option
+%{
+
+mig_graphs.m - Plot function for Kirchhoff migration routine.
+Copyright (C) 2013 Jesper S Dramsch, Matthias Schneider, Dela Spickermann, Jan Walda
+
+ Use:
+ SingleLine for Lineplot, i.e. Frequency plots
+ CompLine for Two Lineplots, i.e. Trace comparison
+ OffsetLine for one Lineplot per Offset, i.e. Amplitudechecks of different Offsets
+ COG for Constant Offset Plots
+ PolarPlot for seismic Polarity Plot, i.e. Summation of Migration result
+ For templates see individual Plot option
+
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+%}
+
 switch switcher
     case 'SingleLine'
         % Template: mig_graphs('SingleLine',data,axis_vector,xlabel,ylabel,fileoutput)

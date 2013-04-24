@@ -17,44 +17,70 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 %}
 
-function [COG, Skala] = CO_kirch_time(data, v, h, dt, dcmp, half_aper)
+function [COG, z] = CO_kirch_time(data, v, h, dt, dcmp, aper_half, flag_interp)
 
-[nt,nx] = size(data);
-COG = zeros(nt,nx);
+[nt,ns] = size(data);
+t_orig=(0:dt:((nt-1)*dt))';
+t_max = max(t_orig);
+COG(1:nt,1:ns) = 0;
+
 %% Loop over CMPs
-for i_cmp=1:nx % Indices of neighbouring CMPs
-    cmp = dcmp*i_cmp; % CMP-distance of the indices
+for i_cmp=1:ns % Indices of neighbouring CMPs
+    % Aperture limits
+    bound_l = max(floor(i_cmp-aper_half), 1);
+    bound_r = min(floor(i_cmp+aper_half), ns);
     
-%% Loop over timesamples
-    for i_t=1:nt
+    % Control if everything runs smoothly
+    %{
+    disp(['     CMP ||' ' left boundary ||'...
+        ' right boundary ||' ' half aperture ||' ' velocity']);
+    disp([(i_cmp-1)*dcmp (bound_l-1)*dcmp...
+        (bound_r-1)*dcmp aper_half*dcmp v]);
+    %}
+    fprintf('||\tCMP \t||\tleft boundary \t||\tright boundary \t||\thalf aperture \t||\tvelocity\t||\n||\t%4g \t||\t\t%4g\t\t||\t\t%4g\t\t||\t\t%4g\t\t||\t%4g\t\t||\n',(i_cmp-1)*dcmp,(bound_l-1)*dcmp,...
+        (bound_r-1)*dcmp,aper_half*dcmp,v)
+    %% Loop over contributing samples (Aperture)
+    for i_aper=bound_l:bound_r
+        % Compute diffraction hyperbola, /2 because data is not TWT but depth
+        t_diff = 0.5* ( sqrt((t_orig*v).^2 ...
+            + ((i_cmp-i_aper)*dcmp-h).^2) ...
+            + sqrt((t_orig*v).^2 ...
+            + ((i_cmp-i_aper)*dcmp+h).^2) )/v;
         
-        Tiefe = sqrt((2*h/(v)).^2+((i_t-1)*dt).^2); % traveltime depth
+        % Exit if diffraction ist out of data
+        t_flag = (t_diff - t_max <= 0);
         
-        t = sqrt(Tiefe^2 + (cmp/(v))^2); % TWT
-        it = floor(1.5 + t/dt); % TWT index
-        
-        if(it > nt) % leave loop if out of Gather
-            break;
-        end
-        
-        amp = 4*(Tiefe*v)/(v^2*t); % Weightfunction
+        %% Compute amplitude correction
+        weight = 4*(t_diff*v)./(v^2.*t_orig);
         % based on Zhang Y. (2000)
         
-        % Aperture limits
-        bound_l = max(floor(i_cmp-1), 1);
-        bound_r = min(floor(nx-i_cmp), nx);
-        if(i_cmp>(1+half_aper) && i_cmp<(nx-half_aper))
-            bound_l = max(floor(i_cmp-1), -half_aper);
-            bound_r = min(floor(nx-i_cmp), +half_aper);
-        end
-        
-%% Loop over aperture
-        for i_aper=bound_l:bound_r
-            COG(i_t,i_aper)=COG(i_t,i_aper)+data(it,i_cmp+i_aper)*amp;
-        end
+        %% flag_interp zdiff
+        % ! only if with interpolation at tdiff
+        if(flag_interp==1)
+            res_interp = interp1(t_orig,data(:,i_aper),t_diff,'spline');
+            
+            % Sinc approach leaves "Sinc-reverb" Looks funny, try it :-)
+            %res_interp = sinc(t_diff(:,ones(size(t_orig))) - t_orig(:,ones(size(t_diff)))')*data(:,i_aper);
 
+            %% Sum up along diffraction
+            % ! with interpolation at tdiff
+            COG(:,i_cmp) = COG(:,i_cmp) ...
+                + res_interp .* weight .* t_flag;
+        elseif(flag_interp==0)
+            i_tdiff = ((floor(1.5+t_diff./dt)-1).*t_flag)+1;
+            % +0.5 so it get rounded correctly and + 1 so its
+            % start with index 1, +1+0.5 = +1.5
+            % ! without interpolation at zdiff
+            COG(:,i_cmp) = COG(:,i_cmp) ...
+                + data(i_tdiff,i_aper) .* weight .* t_flag;
+        else
+            disp('Error, no valid method!');
+        end
     end
 end
 % TWT, daher * 0.5
-COG(1,:,i_h) = 0;         % NaN avoiding
-return 
+COG(1,:) = 0;         % NaN avoiding
+
+z = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v*0.5; % Depth skaling
+
+return

@@ -22,7 +22,7 @@ function [COG] = CO_kirch_depth(data, v, h, dt, dz, dcmp, aper_half, flag_interp
 
 
 [nt,ns] = size(data);
-t_orig=0:dt:((nt-1)*dt);
+t_orig=(0:dt:((nt-1)*dt))';
 t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
 z_max = max(t_depth);                    % Max depth [m]
 z=(0:dz:z_max)';                            % Depthsampling
@@ -74,6 +74,9 @@ for i_cmp = 1:ns
         if(flag_interp==1)
             res_interp = interp1(z,filt_interp(:,i_aper),z_diff,'spline');
             
+            % Sinc approach leaves "Sinc-reverb" Looks funny, try it :-)
+            %res_interp = sinc(z_diff(:,ones(size(z))) - z(:,ones(size(z_diff)))')*filt_interp(:,i_aper);
+
             %% Sum up along diffraction
             % ! with interpolation at zdiff
             COG(:,i_cmp) = COG(:,i_cmp) ...

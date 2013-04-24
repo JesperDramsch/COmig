@@ -33,15 +33,15 @@ nh = 5;          % Number of offsets
 Fs = 1/dt;       % Frequency sampling [Hz]
 hmax = 1000;     % Maximum half-offset [m]
 dh = 250;        % half-offset increment [m]
-vmin = 2650;     % Minimum test velocity [m/s]
-vmax = 2850;     % Maximum test velocity [m/s]
-vfinal = 2750;   % Final migration velocity [m/s]
+vmin = 2754;     % Minimum test velocity [m/s]
+vmax = 2754;     % Maximum test velocity [m/s]
+vfinal = 2754;   % Final migration velocity [m/s]
 dv = 100;        % Velocity increment [m/s]
 aper = 200;      % Aperturewidth [m]
 dz = 4;          % Depthsampling increment [m]
 flag_interp = 1;   % 1 = use interpolation, 0 = use rounding
-kirch_time=0;    % Time Migration
-kirch_depth=1;   % Depth Migration
+kirch_time=1;    % Time Migration
+kirch_depth=0;   % Depth Migration
 
 %% Open file
 % Original data
@@ -95,7 +95,7 @@ for v = vmin:dv:vmax;
     z=0:dz:zmax;                            % Depthsampling
     z_len = length(z);
     Kirchhofftime(1:nt,1:ns,1:nh)=0;        % (time, CMP, halfoffset)
-    Kirchhoffdepth(1:z_len,1:ns,1:nh)=0;% (depth, CMP, halfoffset)
+    %Kirchhoffdepth(1:z_len,1:ns,1:nh)=0;% (depth, CMP, halfoffset)
     mig(1:z_len,1:ns)=0;                % stacking result
     filt_interp(1:z_len,1:ns,1:nh)=0;
     
@@ -105,13 +105,16 @@ for v = vmin:dv:vmax;
         % to get the feeling it still runs when using
         % interpolation at zdiff
         if kirch_time == 1
-            Kirchhofftime(:,:,i_h) = CO_kirch_time(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, aper_half);
-            z = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v*0.5; % Depth skaling
-            Kirchhoffdepth(:,:,i_h) = interp1(z(:,1),Kirchhoff(:,:,i_h),z(:,i_h),'spline');
+            [Kirchhofftime(:,:,i_h), Skala(:,i_h)] = CO_kirch_time(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, aper_half, flag_interp);
+            Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhofftime(:,:,i_h),Skala(:,i_h),'spline');
+            z = Skala(:,1);
+            z_len = length(z);
+            z_max=max(z);
+            COG = Kirchhoffdepth;
         end
         if kirch_depth == 1
             [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dz, dcmp, aper_half, flag_interp);
-            COG = Kirchhoffdepth; %Was schlaueres überlegen
+            COG = Kirchhoffdepth; %Was schlaueres ueberlegen
         end
     end
     

@@ -28,7 +28,7 @@ z_max = max(t_depth);                    % Max depth [m]
 z=(0:dz:z_max)';                            % Depthsampling
 z_len = length(z);
 COG(1:z_len,1:ns) = 0;                      % (depth, CMP)
-cosphi = cos((pi/2)-atan(2*v*z/h));
+cosphi = cos((pi/2)-atan(v*z/h));
 
 
 

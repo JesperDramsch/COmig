@@ -166,7 +166,8 @@ for v = vmin:dv:vmax;
         mig_graphs('SingleLine',abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))),faxis,'Frequencz [Hz]','Normalized Amplitude','freq_mig')
         % Frequency Comparison
         mig_graphs('CompLine','Original data',abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis)))),'Migrated data',abs(migdata(1:length(faxis)))/max(abs(migdata(1:length(faxis)))),faxis,'Frequency [Hz]','Normalized Amplitude','freq_comp')
-        
+        % Frequency Comparison
+        mig_graphs('CompLine','Original data',abs(fdata(1:length(faxis))),'Migrated data',abs(migdata(1:length(faxis))),faxis,'Frequency [Hz]','Amplitude','freq_comp')
         % Fileoutput of datamatrices
         dlmwrite('output/mig.dat',mig)
         dlmwrite('output/COGatherh0.dat',COG(:,:,1));

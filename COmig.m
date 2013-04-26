@@ -38,7 +38,7 @@ vmax = 2754;     % Maximum test velocity [m/s]
 vfinal = 2754;   % Final migration velocity [m/s]
 dv = 100;        % Velocity increment [m/s]
 aper = 200;      % Aperturewidth [m]
-dz = 4;          % Depthsampling increment [m]
+dz = vfinal/1000;          % Depthsampling increment [m]
 flag_interp = 1;   % 1 = use interpolation, 0 = use rounding
 kirch_time=0;    % Time Migration
 kirch_depth=1;   % Depth Migration

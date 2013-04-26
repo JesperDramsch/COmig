@@ -28,7 +28,6 @@ z_max = max(t_depth);                    % Max depth [m]
 z=(0:dz:z_max)';                            % Depthsampling
 z_len = length(z);
 COG(1:z_len,1:ns) = 0;                      % (depth, CMP)
-cosphi = cos((pi/2)-atan(v*z/h));
 
 
 
@@ -57,17 +56,21 @@ for i_cmp = 1:ns
         (bound_r-1)*dcmp,aper_half*dcmp,v)
     %% Loop over contributing samples (Aperture)
     for i_aper=bound_l:bound_r
+        % angle of incidence uf up and downgoing ray
+        cosphi_up = z./sqrt(z.^2 + ((i_cmp-i_aper)*dcmp+h).^2);
+        cosphi_down = z./sqrt(z.^2 + ((i_cmp-i_aper)*dcmp-h).^2);
+        
         % Compute diffraction hyperbola, /2 because data is not TWT but depth
-        z_diff = 0.5*( sqrt(z.^2 ...
-            + ((i_cmp-i_aper)*dcmp-h).^2) ...
-            + sqrt(z.^2 ...
-            + ((i_cmp-i_aper)*dcmp+h).^2) );
+        r_down = sqrt(z.^2 + ((i_cmp-i_aper)*dcmp-h).^2);
+        r_up   = sqrt(z.^2 + ((i_cmp-i_aper)*dcmp+h).^2);
+        z_diff = 0.5*( r_down + r_up );
         
         % Exit if diffraction ist out of data
         z_flag = (z_diff - z_max <= 0);
         
         %% Compute amplitude correction
-        weight = cosphi./sqrt(z_diff.*v);
+        %weight = cosphi./sqrt(z_diff.*v);
+        weight = (cosphi_up.*sqrt(r_down./r_up) + cosphi_down.*sqrt(r_up./r_down))/v;
         
         %% flag_interp zdiff
         % ! only if with interpolation at zdiff

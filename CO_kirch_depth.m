@@ -60,12 +60,14 @@ for i_cmp = 1:ns
         cosphi_up = z./sqrt(z.^2 + ((i_cmp-i_aper)*dcmp+h).^2);
         cosphi_down = z./sqrt(z.^2 + ((i_cmp-i_aper)*dcmp-h).^2);
         
-        % Compute diffraction hyperbola, /2 because data is not TWT but depth
-        r_down = sqrt(z.^2 + ((i_cmp-i_aper)*dcmp-h).^2);
+        % up and downgoing ray
         r_up   = sqrt(z.^2 + ((i_cmp-i_aper)*dcmp+h).^2);
+        r_down = sqrt(z.^2 + ((i_cmp-i_aper)*dcmp-h).^2);
+        
+        % Compute diffraction hyperbola, /2 because data is not TWT but depth
         z_diff = 0.5*( r_down + r_up );
         
-        % Exit if diffraction ist out of data
+        % Zero if diffraction hyperbola ist out of data; else 1
         z_flag = (z_diff - z_max <= 0);
         
         %% Compute amplitude correction

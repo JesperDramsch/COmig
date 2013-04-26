@@ -37,9 +37,9 @@ vmin = 2754;     % Minimum test velocity [m/s]
 vmax = 2754;     % Maximum test velocity [m/s]
 vfinal = 2754;   % Final migration velocity [m/s]
 dv = 100;        % Velocity increment [m/s]
-aper = 200;      % Aperturewidth [m]
-dz = vfinal/1000;          % Depthsampling increment [m]
-flag_interp = 1;   % 1 = use interpolation, 0 = use rounding
+aper = 400;      % Aperturewidth [m]
+dz = vfinal/1e3; % Depthsampling increment [m]
+flag_interp = 0; % 1 = use interpolation, 0 = use rounding
 kirch_time=0;    % Time Migration
 kirch_depth=1;   % Depth Migration
 
@@ -68,6 +68,10 @@ mig_graphs('OffsetLine',filtdata,((1:ns)-1)*dcmp,'ampsfilt')
 mig_graphs('CompLine','Filtered data',filtdata(:,51,1)/max(filtdata(:,51,1)),'Original data',data(:,51,1)/max(data(:,51,1)),((1:nt)-1)*dcmp,'Zeit [s]','Normalisierte Amplitude','waveletnorm')
 % Input signal not normalized
 mig_graphs('CompLine','Filtered data',filtdata(:,51,1),'Original data',data(:,51,1),((1:nt)-1)*dcmp,'Zeit [s]','Amplitude','waveletorig')
+% Input signal original
+mig_graphs('COG',data(:,:),((1:ns*nh)-1)*dcmp,(0:nt-1)','Time [s]','InputCOG')
+% Input signal filtered
+mig_graphs('COG',filtdata(:,:),((1:ns*nh)-1)*dcmp,(0:nt-1)','Time [s]','InputCOGfilt')
 
 %% Frequency analysis
 NFFT = 2^nextpow2(nt);                    % calculate next 2^n to prepare adta for FFT

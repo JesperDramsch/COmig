@@ -58,11 +58,11 @@ for i_cmp = 1:ns
     for i_aper=bound_l:bound_r
         % angle of incidence uf up and downgoing ray
         cosphi_up = z./sqrt(z.^2 + ((i_cmp-i_aper)*dcmp+h).^2);
-        cosphi_down = z./sqrt(z.^2 + ((i_cmp-i_aper)*dcmp-h).^2);
+        cosphi_down = z./sqrt(z.^2 + ((i_cmp-i_aper)*dcmp-h).^2); %Stern
         
         % up and downgoing ray
         r_up   = sqrt(z.^2 + ((i_cmp-i_aper)*dcmp+h).^2);
-        r_down = sqrt(z.^2 + ((i_cmp-i_aper)*dcmp-h).^2);
+        r_down = sqrt(z.^2 + ((i_cmp-i_aper)*dcmp-h).^2); %Stern
         
         % Compute diffraction hyperbola, /2 because data is not TWT but depth
         z_diff = 0.5*( r_down + r_up );
@@ -72,7 +72,7 @@ for i_cmp = 1:ns
         
         %% Compute amplitude correction
         %weight = cosphi./sqrt(z_diff.*v);
-        weight = (cosphi_up.*sqrt(r_down./r_up) + cosphi_down.*sqrt(r_up./r_down))/v;
+        weight = (cosphi_up.*r_down./sqrt(r_up) + cosphi_down.*r_up./sqrt(r_down))/v;
         
         %% flag_interp zdiff
         % ! only if with interpolation at zdiff

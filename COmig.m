@@ -118,7 +118,7 @@ for v = vmin:dv:vmax;
         end
         if kirch_depth == 1
             [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dz, dcmp, aper_half, flag_interp);
-            COG = Kirchhoffdepth/sqrt(2*pi); %Was schlaueres ueberlegen
+            COG = Kirchhoffdepth/(2*pi); %Was schlaueres ueberlegen
         end
     end
     
@@ -129,7 +129,7 @@ for v = vmin:dv:vmax;
     
     if v == vfinal % If loop reaches the correct velocity (estimated with constant velocity scan)
         % (estimated with constant velocity scan)
-        mig(1:z_len,1:ns) = mean(Kirchhoffdepth,3); % summing CO-Gather
+        mig(1:z_len,1:ns) = mean(COG,3); % summing CO-Gather
         
         %% Plot of the migration result
         mig_graphs('PolarPlot',mig(:,:),((1:ns)-1)*dcmp/1000,z,'CMP [km]','Depth [km]',sprintf('sum_vm%g',v))

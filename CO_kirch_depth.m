@@ -72,7 +72,7 @@ for i_cmp = 1:ns
         
         %% Compute amplitude correction
         %weight = cosphi./sqrt(z_diff.*v);
-        weight = (cosphi_up.*r_down./sqrt(r_up) + cosphi_down.*r_up./sqrt(r_down))/v;
+        weight = (cosphi_up.*r_down./sqrt(r_up) + cosphi_down.*r_up./sqrt(r_down))./(v);
         
         %% flag_interp zdiff
         % ! only if with interpolation at zdiff

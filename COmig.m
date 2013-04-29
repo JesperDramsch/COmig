@@ -33,15 +33,13 @@ nh = 5;          % Number of offsets
 Fs = 1/dt;       % Frequency sampling [Hz]
 hmax = 1000;     % Maximum half-offset [m]
 dh = 250;        % half-offset increment [m]
-vmin = 2754;     % Minimum test velocity [m/s]
-vmax = 2754;     % Maximum test velocity [m/s]
-vfinal = 2754;   % Final migration velocity [m/s]
-dv = 100;        % Velocity increment [m/s]
+vmin = 2750;     % Minimum test velocity [m/s]
+vmax = 2750;     % Maximum test velocity [m/s]
+vfinal = 2750;   % Final migration velocity [m/s]
+dv = 50;        % Velocity increment [m/s]
 aper = 400;      % Aperturewidth [m]
 dz = vfinal/1e3; % Depthsampling increment [m]
-flag_interp = 0; % 1 = use interpolation, 0 = use rounding
-kirch_time=0;    % Time Migration
-kirch_depth=1;   % Depth Migration
+flag_interp = 1; % 1 = use interpolation, 0 = use rounding
 
 %% Open file
 % Original data
@@ -98,28 +96,20 @@ for v = vmin:dv:vmax;
     zmax = max(t_depth);                    % Max depth [m]
     z=0:dz:zmax;                            % Depthsampling
     z_len = length(z);
-    Kirchhofftime(1:nt,1:ns,1:nh)=0;        % (time, CMP, halfoffset)
-    %Kirchhoffdepth(1:z_len,1:ns,1:nh)=0;% (depth, CMP, halfoffset)
+    Kirchhoffdepth(1:z_len,1:ns,1:nh)=0;% (depth, CMP, halfoffset)
     mig(1:z_len,1:ns)=0;                % stacking result
     filt_interp(1:z_len,1:ns,1:nh)=0;
+    
     
     %% loop over half offsets
     for i_h = 1:nh
         disp('half offset'); disp((i_h-1)*dh);
         % to get the feeling it still runs when using
         % interpolation at zdiff
-        if kirch_time == 1
-            [Kirchhofftime(:,:,i_h), Skala(:,i_h)] = CO_kirch_time(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, aper_half, flag_interp);
-            Kirchhoffdepth(:,:,i_h) = interp1(Skala(:,1),Kirchhofftime(:,:,i_h),Skala(:,i_h),'spline');
-            z = Skala(:,1);
-            z_len = length(z);
-            z_max=max(z);
-            COG = Kirchhoffdepth;
-        end
-        if kirch_depth == 1
-            [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dz, dcmp, aper_half, flag_interp);
-            COG = Kirchhoffdepth/(2*pi); %Was schlaueres ueberlegen
-        end
+        
+        [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dz, dcmp, aper_half, flag_interp);
+        COG = Kirchhoffdepth/(2*pi);
+        
     end
     
     %% CO-Gather for each velocity
@@ -140,18 +130,7 @@ for v = vmin:dv:vmax;
         SNRin = log(max(max(filtdata(:,:,1)))/mean(mean(abs(filtdata(100:200,:)))));
         SNRorig = log(max(max(abs(data(:,:,1))))/mean(mean(abs(data(100:200,:)))));
         SNRout = log(max(max(mig(:,:)))/mean(mean(abs(mig(100:200,:)))));
-        if kirch_time == 1
-            % Plot trace 51 normalized
-            mig_graphs('CompLine','SNR Input',filtdata(:,51,1)/max(filtdata(:,51,1)),'SNR Migriert',mig(:,51)/max(mig(:,51)),((1:nt)-1)*dt,'Zeit [s]','Normalized Amplitude','SNRnorm')
-            % Plot trace 51 not normalized
-            mig_graphs('CompLine','SNR Input',filtdata(:,51,1),'SNR Migriert',mig(:,51),((1:nt)-1)*dt,'Zeit [s]','Amplitude','SNRreal')
-            
-            % Comparison results normalized
-            mig_graphs('CompLine','Original Data',data(:,51,1)/max(data(:,51,1)),'Migrated Data',mig(:,51,1)/max(mig(:,51,1)),((1:nt)-1)*dt,'Zeit [s]','Normalized Amplitude','waveletNorm')
-            % Comparison results not normalized
-            mig_graphs('CompLine','Original Data',data(:,51,1),'Migrated Data',mig(:,51,1),((1:nt)-1)*dt,'Zeit [s]','Amplitude','wavelet')
-            
-        end
+      
         % Output to screen
         fprintf('Signal-to-Noise ratio von %f2 (filtered) bzw. %f2 (original) auf %f2\n',SNRin,SNRorig,SNRout)
         

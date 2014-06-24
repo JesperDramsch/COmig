@@ -1,5 +1,4 @@
 %{
-
 Comig.m - Common offset Kirchhoff migration in time and depth.
 Copyright (C) 2013 Jesper S Dramsch, Matthias Schneider, Dela Spickermann, Jan Walda
 
@@ -83,30 +82,30 @@ mig_graphs('SingleLine',abs(fdata(1:length(faxis)))/max(abs(fdata(1:length(faxis
 
 %% Kirchhoff migration
 
-%% discretizing and initializing
+%% Open arrays and variables
 h=0:dh:hmax;                       % half offset
 t_orig=0:dt:((nt-1)*dt);
-i_v=0;
-aper_half = round(.5*aper/dcmp);      % half aperture
+i_v=0;                             % velocity iterator
+aper_half = round(.5*aper/dcmp);   % half aperture
 % x-sampling = cmp-sampling
 
 %% Loop over velocities
 for v = vmin:dv:vmax;
     i_v = i_v+1;
     
-    t_depth=t_orig*v*0.5;                   % TWT-time to depth conversion
+    t_depth=t_orig*v*0.5;                   % TWT to depth conversion
     zmax = max(t_depth);                    % Max depth [m]
     z=0:dz:zmax;                            % Depthsampling
     z_len = length(z);
     Kirchhofftime(1:nt,1:ns,1:nh)=0;        % (time, CMP, halfoffset)
-    %Kirchhoffdepth(1:z_len,1:ns,1:nh)=0;% (depth, CMP, halfoffset)
-    mig(1:z_len,1:ns)=0;                % stacking result
+    %Kirchhoffdepth(1:z_len,1:ns,1:nh)=0;   % (depth, CMP, halfoffset)
+    mig(1:z_len,1:ns)=0;                    % stack
     filt_interp(1:z_len,1:ns,1:nh)=0;
     
     %% loop over half offsets
     for i_h = 1:nh
         disp('half offset'); disp((i_h-1)*dh);
-        % to get the feeling it still runs when using
+        % Might take a long time so we give some output for responsiveness
         % interpolation at zdiff
         if kirch_time == 1
             [Kirchhofftime(:,:,i_h), Skala(:,i_h)] = CO_kirch_time(filtdata(:,:,i_h), v, h(i_h), dt, dcmp, aper_half, flag_interp);
@@ -118,7 +117,7 @@ for v = vmin:dv:vmax;
         end
         if kirch_depth == 1
             [Kirchhoffdepth(:,:,i_h)] = CO_kirch_depth(filtdata(:,:,i_h), v, h(i_h), dt, dz, dcmp, aper_half, flag_interp);
-            COG = Kirchhoffdepth/(2*pi); %Was schlaueres ueberlegen
+            COG = Kirchhoffdepth/(2*pi);
         end
     end
     
@@ -127,7 +126,8 @@ for v = vmin:dv:vmax;
     % Compare max amplitude in each CMP in COG
     mig_graphs('OffsetLine',COG,((1:ns)-1)*dcmp,sprintf('ampsv%g',v))
     
-    if v == vfinal % If loop reaches the correct velocity (estimated with constant velocity scan)
+    if v == vfinal 
+		% if loop reaches the correct velocity
         % (estimated with constant velocity scan)
         mig(1:z_len,1:ns) = mean(COG,3); % summing CO-Gather
         
@@ -152,10 +152,10 @@ for v = vmin:dv:vmax;
             mig_graphs('CompLine','Original Data',data(:,51,1),'Migrated Data',mig(:,51,1),((1:nt)-1)*dt,'Zeit [s]','Amplitude','wavelet')
             
         end
-        % Output to screen
-        fprintf('Signal-to-Noise ratio von %f2 (filtered) bzw. %f2 (original) auf %f2\n',SNRin,SNRorig,SNRout)
+        % Output SNR change to screen
+        fprintf('Signal-to-Noise ratio of %f2 (filtered) or %f2 (original) changed to %f2\n',SNRin,SNRorig,SNRout)
         
-        %% Ergebnis Plots
+        %% Plot results
         % Input signal normalized
         mig_graphs('CompLine','Original Data',data(:,51,1)/max(data(:,51,1)),'Filtered Data',filtdata(:,51,1)/max(filtdata(:,51,1)),((1:nt)-1)*dt,'Zeit [s]','Normalized Amplitude','inoutNorm')
         % Input signal not normalized
@@ -189,4 +189,4 @@ for v = vmin:dv:vmax;
     end
     
 end
-tElapsed = toc(tStart);               % calculation time
+tElapsed = toc(tStart);               % Runtime

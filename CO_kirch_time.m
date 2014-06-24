@@ -19,6 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 function [COG, z] = CO_kirch_time(data, v, h, dt, dcmp, aper_half, flag_interp)
 
+%% Open arrays and variables
 [nt,ns] = size(data);
 t_orig=(0:dt:((nt-1)*dt))';
 t_max = max(t_orig);
@@ -30,7 +31,7 @@ for i_cmp=1:ns % Indices of neighbouring CMPs
     bound_l = max(floor(i_cmp-aper_half), 1);
     bound_r = min(floor(i_cmp+aper_half), ns);
     
-    % Control if everything runs smoothly
+    % Possible control if everything runs smoothly
     %{
     disp(['     CMP ||' ' left boundary ||'...
         ' right boundary ||' ' half aperture ||' ' velocity']);
@@ -78,7 +79,7 @@ for i_cmp=1:ns % Indices of neighbouring CMPs
         end
     end
 end
-% TWT, daher * 0.5
+% TWT, therefore * 0.5
 COG(1,:) = 0;         % NaN avoiding
 
 z = sqrt((h/(v)).^2+((0:nt-1)'*dt).^2)*v*0.5; % Depth skaling

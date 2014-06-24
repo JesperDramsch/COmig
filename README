@@ -16,7 +16,7 @@ Proper depth migration with interpolation to a discretized depth grid.
 Several imaging functions for seismic images. The output of a migrated and stacked image may look like this:
 
 v_mig = 2250 m/s
-![Common Offset Gather](https://github.com/JesperDramsch/COmig/blob/master/output/COGv2250.png)
+![Common Offset Gather](/output/COGv2250.png)
 
 v_mig = 2750 m/s
-![COG at 2750m/s](https://github.com/JesperDramsch/COmig/blob/master/output/COGv2750.png)
+![COG at 2750m/s](/output/COGv2750.png)

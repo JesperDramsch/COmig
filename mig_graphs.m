@@ -1,6 +1,5 @@
 function mig_graphs(switcher,varargin)
 %{
-
 mig_graphs.m - Plot function for Kirchhoff migration routine.
 Copyright (C) 2013 Jesper S Dramsch, Matthias Schneider, Dela Spickermann, Jan Walda
 

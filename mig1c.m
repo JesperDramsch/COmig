@@ -25,7 +25,7 @@ close all
 clc
 
 z0 = 2000;                          %Wahre angenommene Reflektortiefe      
-v_verhaeltnis   = [0.9;1;1.1].^2; %Vm/V0
+v_verhaeltnis   = [0.9;1;1.1].^2;   %Vm/V0
 hz0 = 0:.001:3;                     %h/z0
 
 vvvektor = repmat([0.9;1;1.1].^2,size(hz0));
